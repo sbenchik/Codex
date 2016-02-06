@@ -18,14 +18,14 @@ LEXERS = {
         'HTML': QsciLexerHTML(),
         'IDL': QsciLexerIDL(),
         'Java': QsciLexerJava(),
-        'Javascript': QsciLexerJavaScript(),
+        'JavaScript': QsciLexerJavaScript(),
         'Lua': QsciLexerLua(),
         'Makefile': QsciLexerMakefile(),
         'MATLAB': QsciLexerMatlab(),
         'Octave': QsciLexerOctave(),
         'Pascal': QsciLexerPascal(),
         'Perl': QsciLexerPerl(),
-        'Postscript': QsciLexerPostScript(),
+        'PostScript': QsciLexerPostScript(),
         'POV': QsciLexerPOV(),
         'Properties': QsciLexerProperties(),
         'Python': QsciLexerPython(),
@@ -40,6 +40,12 @@ LEXERS = {
         'YAML': QsciLexerYAML(),
     }
 
+class QsciLexerText(QsciLexerCustom):
+    """Plain text lexer"""
+    def __init__(self, arg):
+        QsciLexerCustom.__init__(self, parent)
+
+
 class Editor(QsciScintilla):
 
     """Reimplemanetation of the main QsciScintilla class to handle tabs"""
@@ -48,7 +54,9 @@ class Editor(QsciScintilla):
         self.initUI()
 
     def setLang(self, lex):
-        self.setLexer(self.getLexer(lex))
+        lexer = self.getLexer(lex)
+        api = QsciAPIs(lexer)
+        self.setLexer(lexer)
         # Setting the lexer resets the margin background to gray
         # so it has to be reset to white
         self.setMarginsBackgroundColor(QColor("White"))
@@ -58,13 +66,22 @@ class Editor(QsciScintilla):
         lexer = LEXERS.get(lex)
         # Workaround because setting a lexer would set
         # the background to black and the text to white
-        lexer.setDefaultPaper(QColor("White"))
-        lexer.setDefaultColor(QColor("Black"))
+        if lex != QsciLexerText:
+            lexer.setDefaultPaper(QColor("White"))
+            lexer.setDefaultColor(QColor("Black"))
+            # Set auto indentation
+            lexer.setAutoIndentStyle(QsciScintilla.AiMaintain)
         return lexer
 
     def initUI(self):
         # Enable brace matching
         self.setBraceMatching(QsciScintilla.SloppyBraceMatch)
+        # Enable auto indentation
+        self.setAutoIndent(True)
+        self.setIndentationGuides(True)
+        # Enable code folding
+        self.setFolding(QsciScintilla.BoxedTreeFoldStyle)
+        self.setFoldMarginColors(QColor("White"),QColor("White"))
         # Enable line numbers
         font = QFont()
         metrics = QFontMetrics(font)
@@ -74,6 +91,10 @@ class Editor(QsciScintilla):
         # Current line has different color
         self.setCaretLineVisible(True)
         self.setCaretLineBackgroundColor(QColor("#E6E6E6"))
+        # Set autocompletion
+        #self.setAutoCompleteThreshold(1)
+        self.setAutoCompletionSource(QsciScintilla.AcsAll)
+        self.setAutoCompletionThreshold(4)
 
 class Main(QtGui.QMainWindow):
 
@@ -81,9 +102,9 @@ class Main(QtGui.QMainWindow):
     def __init__(self, parent = None):
         super(Main, self).__init__(parent)
         self.filename = "Untitled"
+        self.tabNum = 1
 
         self.initUI()
-        self.initActions()
 
     def initActions(self):
 
@@ -114,23 +135,32 @@ class Main(QtGui.QMainWindow):
         self.hideTabAction.setCheckable(True)
         self.hideTabAction.triggered.connect(self.toggleTabs)
 
-        self.addToolBarBreak()
+        self.noLexAct = QtGui.QAction("Plain Text",self)
+        self.noLexAct.triggered.connect(self.noLex)
 
     def initUI(self):
 
         self.initActions()
         self.initMenubar()
+        self.initTabs()
         # x and y coordinates on the screen, width, height
         self.setGeometry(100,100,600,430)
         # Self explanatory
         self.setWindowTitle("Writer")
         # Set window icon
         self.setWindowIcon(QtGui.QIcon("pencil.png"))
+
+    def lessTabs(self):
+        self.tabNum = self.tabNum - 1
+        if self.tabNum == 1:
+            self.tab.setTabsClosable(False)
+
+    def initTabs(self):
         # Set up the tabs
         self.tab = QtGui.QTabWidget(self)
         self.setCentralWidget(self.tab)
-        self.tab.setTabsClosable(True)
         self.tab.tabCloseRequested.connect(self.tab.removeTab)
+        self.tab.tabCloseRequested.connect(self.lessTabs)
         self.tab.setMovable(True)
         self.edit = Editor()
         self.tab.addTab(self.edit, self.filename)
@@ -159,17 +189,21 @@ class Main(QtGui.QMainWindow):
         about.addAction(self.aboutAction)
 
     def initLexers(self):
-
         # Dict that maps lexer actions to their respective strings
         self.lexActs = {}
         langGrp = QActionGroup(self.lang)
         langGrp.setExclusive(True)
+        self.lang.addAction(self.noLexAct)
+        self.lang.addSeparator()
         for i in LEXERS:
             langAct = self.lang.addAction(i)
             langAct.setCheckable(True)
             langAct.setActionGroup(langGrp)
             self.lexActs[langAct] = i
         langGrp.triggered.connect(lambda lex: self.edit.setLang(self.lexActs.get(lex)))
+
+    def noLex(self):
+        self.edit.setLang(QsciLexerText)
 
     def formatFN(self, fn):
         fn = str(fn)
@@ -178,7 +212,8 @@ class Main(QtGui.QMainWindow):
         return fn
 
     def new(self):
-        self.tab.addTab(Editor(), "Untitled")
+        main = Main()
+        main.show()
 
     def open(self):
         # Get file names and only show text files
@@ -198,7 +233,7 @@ class Main(QtGui.QMainWindow):
         # Note that changes to the document are saved
         self.edit.setModified(False)
         # Set the tab title to filename
-        self.tab.setTabText(0, self.formatFN(self.filename))
+        self.tab.setTabText(self.tab.currentIndex(), self.formatFN(self.filename))
 
     def saveAs(self):
         self.filename = QtGui.QFileDialog.getSaveFileName(self, 'Save File')
@@ -208,20 +243,24 @@ class Main(QtGui.QMainWindow):
         # Note that changes to the document are saved
         self.edit.setModified(False)
         # Set the tab title to filename
-        self.tab.setTabText(0, self.formatFN(self.filename))
+        self.tab.setTabText(self.tab.currentIndex(), self.formatFN(self.filename))
 
     def about(self):
         QtGui.QMessageBox.about(self, "About Writer",
-                                "<p> Writer is an all-purpose text editor " \
-                                "written in Python and Qt4.</p>"
+                                "<p> Writer is a text editor " \
+                                "made with PyQt4 and QScintilla." \
+                                " It is based off Peter Goldsborough's "
+                                "Writer tutorial from binpress.com.</p>"
                                 )
 
     def toggleTabs(self):
-        state = self.tabbar.isVisible()
-        self.tabbar.setVisible(not state)
+        state = self.tab.isVisible()
+        self.tab.setVisible(not state)
 
     def newTab(self):
         self.tab.addTab(Editor(), self.filename)
+        self.tabNum+=1
+        self.tab.setTabsClosable(True)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
