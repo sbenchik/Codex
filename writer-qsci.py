@@ -1,4 +1,4 @@
-import sys, os
+import sys, os, atexit, functools
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
