@@ -91,7 +91,7 @@ class Editor(QsciScintilla):
         self.setCaretLineVisible(True)
         self.setCaretLineBackgroundColor(QColor("#E6E6E6"))
         # Set autocompletion
-        self.setAutoCompletionSource(QsciScintilla.AcsAll)
+        self.setAutoCompletionSource(QsciScintilla.AcsDocument)
         self.setAutoCompletionThreshold(4)
 
 class Main(QtGui.QMainWindow):
