@@ -3,6 +3,12 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.Qsci import *
+from qtwidgets.x11.terminal import XTerm
+
+class QsciLexerText(QsciLexerCustom):
+    """Setting for no lexer"""
+    def __init__(self, parent=None):
+        super(QsciLexerText, self).__init__(parent)
 
 LEXERS = {
         'BASH': QsciLexerBash(),
@@ -40,22 +46,15 @@ LEXERS = {
         'YAML': QsciLexerYAML(),
     }
 
-class QsciLexerText(QsciLexerCustom):
-    """Plain text lexer"""
-    def __init__(self, arg):
-        QsciLexerCustom.__init__(self, parent)
-
 
 class Editor(QsciScintilla):
-
-    """Reimplemanetation of the main QsciScintilla class to handle tabs"""
+    """QScintilla widget used in the editor"""
     def __init__(self, parent = None):
         super(Editor, self).__init__(parent)
         self.initUI()
 
     def setLang(self, lex):
         lexer = self.getLexer(lex)
-        api = QsciAPIs(lexer)
         self.setLexer(lexer)
         # Setting the lexer resets the margin background to gray
         # so it has to be reset to white
@@ -92,7 +91,6 @@ class Editor(QsciScintilla):
         self.setCaretLineVisible(True)
         self.setCaretLineBackgroundColor(QColor("#E6E6E6"))
         # Set autocompletion
-        #self.setAutoCompleteThreshold(1)
         self.setAutoCompletionSource(QsciScintilla.AcsAll)
         self.setAutoCompletionThreshold(4)
 
@@ -131,21 +129,30 @@ class Main(QtGui.QMainWindow):
         self.aboutAction = QtGui.QAction("About Writer",self)
         self.aboutAction.triggered.connect(self.about)
 
-        self.hideTabAction = QtGui.QAction("Hide Tabs",self)
-        self.hideTabAction.setCheckable(True)
-        self.hideTabAction.triggered.connect(self.toggleTabs)
-
         self.noLexAct = QtGui.QAction("Plain Text",self)
         self.noLexAct.triggered.connect(self.noLex)
 
-    def initUI(self):
+        self.showTermAct = QtGui.QAction("Show Terminal",self)
+        self.showTermAct.setShortcut("Ctrl+Shift+T")
+        self.showTermAct.triggered.connect(self.showTerm)
 
+        self.hideTermAct = QtGui.QAction("Hide Terminal",self)
+        self.hideTermAct.setShortcut("Ctrl+Shift+H")
+        self.hideTermAct.triggered.connect(self.hideTerm)
+
+    def initUI(self):
+        # Create qsplitter (Allows split screen for terminal)
+        self.split = QSplitter()
+        self.split.setOrientation(Qt.Vertical)
+        self.setCentralWidget(self.split)
+        # Create everything else
         self.initActions()
         self.initMenubar()
         self.initTabs()
+        # Create terminal widget
+        self.term = XTerm(self)
         # x and y coordinates on the screen, width, height
         self.setGeometry(100,100,600,430)
-        # Self explanatory
         self.setWindowTitle("QsciWriter")
         # Set window icon
         self.setWindowIcon(QtGui.QIcon("pencil.png"))
@@ -158,12 +165,13 @@ class Main(QtGui.QMainWindow):
     def initTabs(self):
         # Set up the tabs
         self.tab = QtGui.QTabWidget(self)
-        self.setCentralWidget(self.tab)
         self.tab.tabCloseRequested.connect(self.tab.removeTab)
         self.tab.tabCloseRequested.connect(self.lessTabs)
         self.tab.setMovable(True)
+        # Automatically make new tabs contain an editor widget
         self.edit = Editor()
         self.tab.addTab(self.edit, self.filename)
+        self.split.addWidget(self.tab)
 
     def initMenubar(self):
 
@@ -184,7 +192,8 @@ class Main(QtGui.QMainWindow):
         file.addAction(self.saveAction)
         file.addAction(self.saveasAction)
 
-        view.addAction(self.hideTabAction)
+        view.addAction(self.showTermAct)
+        view.addAction(self.hideTermAct)
 
         about.addAction(self.aboutAction)
 
@@ -194,6 +203,8 @@ class Main(QtGui.QMainWindow):
         langGrp = QActionGroup(self.lang)
         langGrp.setExclusive(True)
         self.lang.addAction(self.noLexAct)
+        self.noLexAct.setCheckable(True)
+        self.noLexAct.setActionGroup(langGrp)
         self.lang.addSeparator()
         for i in LEXERS:
             langAct = self.lang.addAction(i)
@@ -205,11 +216,8 @@ class Main(QtGui.QMainWindow):
     def noLex(self):
         self.edit.setLang(QsciLexerText)
 
-    def formatFN(self, fn):
-        fn = str(fn)
-        fn = os.path.basename(fn)
-        fn = QString(fn)
-        return fn
+    def toQString(self, fn):
+        return QString(os.path.basename(str(fn)))
 
     def new(self):
         main = Main()
@@ -217,11 +225,13 @@ class Main(QtGui.QMainWindow):
 
     def open(self):
         # Get file names and only show text files
-        self.filename = QtGui.QFileDialog.getOpenFileName(self, 'Open File',".")
-
-        if self.filename:
-            with open(self.filename,"rt") as file:
-                self.text.setText(file.read())
+        self.file = QtGui.QFileDialog.getOpenFileName(self, 'Open File',".")
+        if self.file:
+            with open(self.file,"rt") as f:
+                self.edit.setText(f.read())
+                # Set the tab title to filename
+                self.tab.setTabText(self.tab.currentIndex(), self.toQString(self.file))
+                self.filename = str(self.file)
 
     def save(self):
         # Only open if it hasn't previously been saved
@@ -233,7 +243,7 @@ class Main(QtGui.QMainWindow):
         # Note that changes to the document are saved
         self.edit.setModified(False)
         # Set the tab title to filename
-        self.tab.setTabText(self.tab.currentIndex(), self.formatFN(self.filename))
+        self.tab.setTabText(self.tab.currentIndex(), self.toQString(self.filename))
 
     def saveAs(self):
         self.filename = QtGui.QFileDialog.getSaveFileName(self, 'Save File')
@@ -243,7 +253,7 @@ class Main(QtGui.QMainWindow):
         # Note that changes to the document are saved
         self.edit.setModified(False)
         # Set the tab title to filename
-        self.tab.setTabText(self.tab.currentIndex(), self.formatFN(self.filename))
+        self.tab.setTabText(self.tab.currentIndex(), self.toQString(self.filename))
 
     def about(self):
         QtGui.QMessageBox.about(self, "About QsciWriter",
@@ -261,6 +271,14 @@ class Main(QtGui.QMainWindow):
         self.tab.addTab(Editor(), self.filename)
         self.tabNum+=1
         self.tab.setTabsClosable(True)
+
+    def showTerm(self):
+        self.split.addWidget(self.term)
+        self.term.resize(600, 50)
+        self.term.show_term()
+
+    def hideTerm(self):
+        self.term.hide()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
