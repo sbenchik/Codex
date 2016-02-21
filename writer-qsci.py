@@ -80,9 +80,9 @@ class Editor(QsciScintilla):
         self.setFolding(QsciScintilla.BoxedTreeFoldStyle)
         self.setFoldMarginColors(QColor("White"),QColor("White"))
         # Enable line numbers
-        font = QFont()
-        metrics = QFontMetrics(font)
-        self.setMarginWidth(0,metrics.width("00000"))
+        self.font = QFont()
+        self.metrics = QFontMetrics(self.font)
+        self.setMarginWidth(0,self.metrics.width("00000"))
         self.setMarginLineNumbers(0, True)
         self.setMarginsBackgroundColor(QColor("White"))
         # Current line has different color
@@ -138,8 +138,61 @@ class Main(QtGui.QMainWindow):
         self.hideTermAct.setShortcut("Ctrl+Shift+H")
         self.hideTermAct.triggered.connect(self.hideTerm)
 
-        self.addAct = QtGui.QAction("Add brace",self)
-        self.addAct.triggered.connect(self.addBrace)
+        self.toggleIntAct = QtGui.QAction("Indentation Guides",self)
+        self.toggleIntAct.triggered.connect(self.toggleIntGuide)
+        self.toggleIntAct.setCheckable(True)
+        self.toggleIntAct.setChecked(True)
+
+        self.toggleLNAct = QtGui.QAction("Line Numbers",self)
+        self.toggleLNAct.triggered.connect(self.toggleLN)
+        self.toggleLNAct.setCheckable(True)
+        self.toggleLNAct.setChecked(True)
+
+        self.toggleFMAct = QtGui.QAction("Fold Margin",self)
+        self.toggleFMAct.triggered.connect(self.toggleFM)
+        self.toggleFMAct.setCheckable(True)
+        self.toggleFMAct.setChecked(True)
+
+    def initMenubar(self):
+        menubar = self.menuBar()
+
+        file = menubar.addMenu("File")
+        edit = menubar.addMenu("Edit")
+        self.lang = menubar.addMenu("Languages")
+        view = menubar.addMenu("View")
+        about = menubar.addMenu("About")
+
+        self.initLexers()
+
+        file.addAction(self.newAction)
+        file.addAction(self.newTabAction)
+        file.addAction(self.openAction)
+        file.addAction(self.saveAction)
+        file.addAction(self.saveasAction)
+
+        view.addAction(self.showTermAct)
+        view.addAction(self.hideTermAct)
+        view.addAction(self.toggleIntAct)
+        view.addAction(self.toggleLNAct)
+        view.addAction(self.toggleFMAct)
+
+        about.addAction(self.aboutAction)
+
+    def lessTabs(self):
+        self.tabNum = self.tabNum - 1
+        if self.tabNum == 1:
+            self.tab.setTabsClosable(False)
+
+    def initTabs(self):
+        # Set up the tabs
+        self.tab = QtGui.QTabWidget(self)
+        self.tab.tabCloseRequested.connect(self.tab.removeTab)
+        self.tab.tabCloseRequested.connect(self.lessTabs)
+        self.tab.setMovable(True)
+        # Automatically make new tabs contain an editor widget
+        self.edit = Editor()
+        self.tab.addTab(self.edit, self.filename)
+        self.split.addWidget(self.tab)
 
     def initUI(self):
         # Create qsplitter (Allows split screen for terminal)
@@ -157,48 +210,6 @@ class Main(QtGui.QMainWindow):
         self.setWindowTitle("QsciWriter")
         # Set window icon
         self.setWindowIcon(QtGui.QIcon("pencil.png"))
-
-    def lessTabs(self):
-        self.tabNum = self.tabNum - 1
-        if self.tabNum == 1:
-            self.tab.setTabsClosable(False)
-
-    def initTabs(self):
-        # Set up the tabs
-        self.tab = QtGui.QTabWidget(self)
-        self.tab.tabCloseRequested.connect(self.tab.removeTab)
-        self.tab.tabCloseRequested.connect(self.lessTabs)
-        self.tab.setMovable(True)
-        # Automatically make new tabs contain an editor widget
-        self.edit = Editor()
-        self.tab.addTab(self.edit, self.filename)
-        self.split.addWidget(self.tab)
-        self.addBrace()
-
-    def initMenubar(self):
-
-        menubar = self.menuBar()
-
-        file = menubar.addMenu("File")
-        edit = menubar.addMenu("Edit")
-        doc = menubar.addMenu("Document")
-        self.lang = doc.addMenu("Languages")
-        view = menubar.addMenu("View")
-        about = menubar.addMenu("About")
-
-        self.initLexers()
-
-        file.addAction(self.newAction)
-        file.addAction(self.newTabAction)
-        file.addAction(self.openAction)
-        file.addAction(self.saveAction)
-        file.addAction(self.saveasAction)
-        file.addAction(self.addAct)
-
-        view.addAction(self.showTermAct)
-        view.addAction(self.hideTermAct)
-
-        about.addAction(self.aboutAction)
 
     def initLexers(self):
         # Dict that maps lexer actions to their respective strings
@@ -280,10 +291,20 @@ class Main(QtGui.QMainWindow):
     def hideTerm(self):
         self.term.hide()
 
-    def addBrace(self):
-        # if self.edit.wordAtLineIndex(self.edit.lines(), self.edit.length()-1) == QString("{"):
-        #     self.edit.insert(QString("}"))
-        print str(self.edit.wordAtLineIndex(1,26))
+    def toggleIntGuide(self):
+        state = self.edit.indentationGuides()
+        self.edit.setIndentationGuides(not state)
+
+    def toggleLN(self):
+        state = self.edit.marginLineNumbers(0)
+        self.edit.setMarginLineNumbers(0, not state)
+        if state == True:
+            self.edit.setMarginWidth(0,0)
+        elif state == False:
+            self.edit.setMarginWidth(0,self.edit.metrics.width("00000"))
+
+    def toggleFM(self):
+        pass
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
