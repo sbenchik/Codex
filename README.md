@@ -12,6 +12,6 @@ Current features are:
 
 Features in development are:
 * Find/replace
-* Better autoindent support
 * Snippet support
-
+* File tree sidebar thingy
+* Support for different colorschemes
