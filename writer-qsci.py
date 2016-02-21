@@ -68,16 +68,14 @@ class Editor(QsciScintilla):
         if lex != QsciLexerText:
             lexer.setDefaultPaper(QColor("White"))
             lexer.setDefaultColor(QColor("Black"))
-            # Set auto indentation
-            lexer.setAutoIndentStyle(QsciScintilla.AiMaintain)
         return lexer
 
     def initUI(self):
-        # Enable brace matching
-        self.setBraceMatching(QsciScintilla.SloppyBraceMatch)
         # Enable auto indentation
         self.setAutoIndent(True)
         self.setIndentationGuides(True)
+        # Enable brace matching
+        self.setBraceMatching(QsciScintilla.SloppyBraceMatch)
         # Enable code folding
         self.setFolding(QsciScintilla.BoxedTreeFoldStyle)
         self.setFoldMarginColors(QColor("White"),QColor("White"))
@@ -130,7 +128,7 @@ class Main(QtGui.QMainWindow):
         self.aboutAction.triggered.connect(self.about)
 
         self.noLexAct = QtGui.QAction("Plain Text",self)
-        self.noLexAct.triggered.connect(self.noLex)
+        self.noLexAct.triggered.connect(lambda noLex: self.edit.setLang(QsciLexerText))
 
         self.showTermAct = QtGui.QAction("Show Terminal",self)
         self.showTermAct.setShortcut("Ctrl+Shift+T")
@@ -139,6 +137,9 @@ class Main(QtGui.QMainWindow):
         self.hideTermAct = QtGui.QAction("Hide Terminal",self)
         self.hideTermAct.setShortcut("Ctrl+Shift+H")
         self.hideTermAct.triggered.connect(self.hideTerm)
+
+        self.addAct = QtGui.QAction("Add brace",self)
+        self.addAct.triggered.connect(self.addBrace)
 
     def initUI(self):
         # Create qsplitter (Allows split screen for terminal)
@@ -172,6 +173,7 @@ class Main(QtGui.QMainWindow):
         self.edit = Editor()
         self.tab.addTab(self.edit, self.filename)
         self.split.addWidget(self.tab)
+        self.addBrace()
 
     def initMenubar(self):
 
@@ -191,6 +193,7 @@ class Main(QtGui.QMainWindow):
         file.addAction(self.openAction)
         file.addAction(self.saveAction)
         file.addAction(self.saveasAction)
+        file.addAction(self.addAct)
 
         view.addAction(self.showTermAct)
         view.addAction(self.hideTermAct)
@@ -213,10 +216,7 @@ class Main(QtGui.QMainWindow):
             self.lexActs[langAct] = i
         langGrp.triggered.connect(lambda lex: self.edit.setLang(self.lexActs.get(lex)))
 
-    def noLex(self):
-        self.edit.setLang(QsciLexerText)
-
-    def toQString(self, fn):
+    def FNToQString(self, fn):
         return QString(os.path.basename(str(fn)))
 
     def new(self):
@@ -230,7 +230,7 @@ class Main(QtGui.QMainWindow):
             with open(self.file,"rt") as f:
                 self.edit.setText(f.read())
                 # Set the tab title to filename
-                self.tab.setTabText(self.tab.currentIndex(), self.toQString(self.file))
+                self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(self.file))
                 self.filename = str(self.file)
 
     def save(self):
@@ -243,7 +243,7 @@ class Main(QtGui.QMainWindow):
         # Note that changes to the document are saved
         self.edit.setModified(False)
         # Set the tab title to filename
-        self.tab.setTabText(self.tab.currentIndex(), self.toQString(self.filename))
+        self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(self.filename))
 
     def saveAs(self):
         self.filename = QtGui.QFileDialog.getSaveFileName(self, 'Save File')
@@ -253,7 +253,7 @@ class Main(QtGui.QMainWindow):
         # Note that changes to the document are saved
         self.edit.setModified(False)
         # Set the tab title to filename
-        self.tab.setTabText(self.tab.currentIndex(), self.toQString(self.filename))
+        self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(self.filename))
 
     def about(self):
         QtGui.QMessageBox.about(self, "About QsciWriter",
@@ -279,6 +279,11 @@ class Main(QtGui.QMainWindow):
 
     def hideTerm(self):
         self.term.hide()
+
+    def addBrace(self):
+        # if self.edit.wordAtLineIndex(self.edit.lines(), self.edit.length()-1) == QString("{"):
+        #     self.edit.insert(QString("}"))
+        print str(self.edit.wordAtLineIndex(1,26))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
