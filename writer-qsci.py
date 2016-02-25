@@ -124,6 +124,26 @@ class Main(QtGui.QMainWindow):
         self.saveasAction.setShortcut("Ctrl+Shift+S")
         self.saveasAction.triggered.connect(self.saveAs)
 
+        self.cutAction = QtGui.QAction("Cut",self)
+        self.cutAction.setShortcut("Ctrl+X")
+        self.cutAction.triggered.connect(lambda cut: self.edit.cut)
+
+        self.copyAction = QtGui.QAction("Copy",self)
+        self.copyAction.setShortcut("Ctrl+C")
+        self.copyAction.triggered.connect(lambda copy: self.edit.copy)
+
+        self.pasteAction = QtGui.QAction("Paste",self)
+        self.pasteAction.setShortcut("Ctrl+V")
+        self.pasteAction.triggered.connect(lambda paste: self.edit.paste)
+
+        self.undoAction = QtGui.QAction("Undo",self)
+        self.undoAction.setShortcut("Ctrl+Z")
+        self.undoAction.triggered.connect(lambda undo: self.edit.undo)
+
+        self.redoAction = QtGui.QAction("Redo",self)
+        self.redoAction.setShortcut("Ctrl+Y")
+        self.redoAction.triggered.connect(lambda redo: self.edit.redo)
+
         self.aboutAction = QtGui.QAction("About Writer",self)
         self.aboutAction.triggered.connect(self.about)
 
@@ -169,6 +189,13 @@ class Main(QtGui.QMainWindow):
         file.addAction(self.openAction)
         file.addAction(self.saveAction)
         file.addAction(self.saveasAction)
+
+        edit.addAction(self.undoAction)
+        edit.addAction(self.redoAction)
+        edit.addSeparator()
+        edit.addAction(self.copyAction)
+        edit.addAction(self.cutAction)
+        edit.addAction(self.pasteAction)
 
         view.addAction(self.showTermAct)
         view.addAction(self.hideTermAct)
