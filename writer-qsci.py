@@ -55,11 +55,11 @@ class Editor(QsciScintilla):
 
     def setLang(self, lex):
         lexer = self.getLexer(lex)
+        lexer.setDefaultFont(self.font)
         self.setLexer(lexer)
         # Setting the lexer resets the margin background to gray
         # so it has to be reset to white
         self.setMarginsBackgroundColor(QColor("White"))
-        self.SendScintilla(QsciScintilla.SCI_STYLESETFONT, 1, 'Ubuntu Mono')
 
     def getLexer(self, lex):
         lexer = LEXERS.get(lex)
@@ -71,8 +71,9 @@ class Editor(QsciScintilla):
         return lexer
 
     def initUI(self):
-        # Enable auto indentation
+        # Enable auto indentation and set them to 4 spaces
         self.setAutoIndent(True)
+        self.setIndentationWidth(4)
         self.setIndentationGuides(True)
         # Enable brace matching
         self.setBraceMatching(QsciScintilla.SloppyBraceMatch)
@@ -80,7 +81,7 @@ class Editor(QsciScintilla):
         self.setFolding(QsciScintilla.BoxedTreeFoldStyle)
         self.setFoldMarginColors(QColor("White"),QColor("White"))
         # Enable line numbers
-        self.font = QFont()
+        self.font = QtGui.QFont("Mono", 10.5, QFont.Normal)
         self.metrics = QFontMetrics(self.font)
         self.setMarginWidth(0,self.metrics.width("00000"))
         self.setMarginLineNumbers(0, True)
@@ -91,6 +92,8 @@ class Editor(QsciScintilla):
         # Set autocompletion
         self.setAutoCompletionSource(QsciScintilla.AcsDocument)
         self.setAutoCompletionThreshold(4)
+        # Set the font of the application to be a mono font
+        self.setFont(self.font)
 
 class Main(QtGui.QMainWindow):
 
@@ -168,11 +171,6 @@ class Main(QtGui.QMainWindow):
         self.toggleLNAct.setCheckable(True)
         self.toggleLNAct.setChecked(True)
 
-        self.toggleFMAct = QtGui.QAction("Fold Margin",self)
-        self.toggleFMAct.triggered.connect(self.toggleFM)
-        self.toggleFMAct.setCheckable(True)
-        self.toggleFMAct.setChecked(True)
-
     def initMenubar(self):
         menubar = self.menuBar()
 
@@ -201,7 +199,6 @@ class Main(QtGui.QMainWindow):
         view.addAction(self.hideTermAct)
         view.addAction(self.toggleIntAct)
         view.addAction(self.toggleLNAct)
-        view.addAction(self.toggleFMAct)
 
         about.addAction(self.aboutAction)
 
@@ -329,9 +326,6 @@ class Main(QtGui.QMainWindow):
             self.edit.setMarginWidth(0,0)
         elif state == False:
             self.edit.setMarginWidth(0,self.edit.metrics.width("00000"))
-
-    def toggleFM(self):
-        pass
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
