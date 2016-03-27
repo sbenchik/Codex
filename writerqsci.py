@@ -1,14 +1,13 @@
 import sys, os, atexit, functools
+
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.Qsci import *
-from qtwidgets.x11.terminal import XTerm
 
-class QsciLexerText(QsciLexerCustom):
-    """Setting for no lexer"""
-    def __init__(self, parent=None):
-        super(QsciLexerText, self).__init__(parent)
+from qtwidgets.x11.terminal import XTerm
+from qtwidgets.find import Find
+from qtwidgets.TextLexer import QsciLexerText
 
 LEXERS = {
         'BASH': QsciLexerBash(),
@@ -31,6 +30,7 @@ LEXERS = {
         'Octave': QsciLexerOctave(),
         'Pascal': QsciLexerPascal(),
         'Perl': QsciLexerPerl(),
+        'PHP': QsciLexerHTML(),
         'PostScript': QsciLexerPostScript(),
         'POV': QsciLexerPOV(),
         'Properties': QsciLexerProperties(),
@@ -65,9 +65,8 @@ class Editor(QsciScintilla):
         lexer = LEXERS.get(lex)
         # Workaround because setting a lexer would set
         # the background to black and the text to white
-        if lex != QsciLexerText:
-            lexer.setDefaultPaper(QColor("White"))
-            lexer.setDefaultColor(QColor("Black"))
+        lexer.setDefaultPaper(QColor("White"))
+        lexer.setDefaultColor(QColor("Black"))
         return lexer
 
     def initUI(self):
@@ -80,7 +79,7 @@ class Editor(QsciScintilla):
         # Enable code folding
         self.setFolding(QsciScintilla.BoxedTreeFoldStyle)
         self.setFoldMarginColors(QColor("White"),QColor("White"))
-        # Enable line numbers
+        # Set the font to black mono
         self.font = QtGui.QFont("Mono", 10.5, QFont.Normal)
         self.metrics = QFontMetrics(self.font)
         self.setMarginWidth(0,self.metrics.width("00000"))
@@ -106,7 +105,6 @@ class Main(QtGui.QMainWindow):
         self.initUI()
 
     def initActions(self):
-
         self.newAction = QtGui.QAction("New Window",self)
         self.newAction.setShortcut("Ctrl+N")
         self.newAction.triggered.connect(self.new)
@@ -151,7 +149,7 @@ class Main(QtGui.QMainWindow):
         self.aboutAction.triggered.connect(self.about)
 
         self.noLexAct = QtGui.QAction("Plain Text",self)
-        self.noLexAct.triggered.connect(lambda noLex: self.edit.setLang(QsciLexerText))
+        self.noLexAct.triggered.connect(lambda noLex: self.edit.setLexer(QsciLexerText()))
 
         self.showTermAct = QtGui.QAction("Show Terminal",self)
         self.showTermAct.setShortcut("Ctrl+Shift+T")
@@ -170,6 +168,10 @@ class Main(QtGui.QMainWindow):
         self.toggleLNAct.triggered.connect(self.toggleLN)
         self.toggleLNAct.setCheckable(True)
         self.toggleLNAct.setChecked(True)
+
+        self.FRAct = QtGui.QAction("Find and Replace",self)
+        self.FRAct.triggered.connect(self.fr)
+        self.FRAct.setShortcut("Ctrl+F")
 
     def initMenubar(self):
         menubar = self.menuBar()
@@ -194,6 +196,7 @@ class Main(QtGui.QMainWindow):
         edit.addAction(self.copyAction)
         edit.addAction(self.cutAction)
         edit.addAction(self.pasteAction)
+        edit.addAction(self.FRAct)
 
         view.addAction(self.showTermAct)
         view.addAction(self.hideTermAct)
@@ -326,6 +329,11 @@ class Main(QtGui.QMainWindow):
             self.edit.setMarginWidth(0,0)
         elif state == False:
             self.edit.setMarginWidth(0,self.edit.metrics.width("00000"))
+
+    def fr(self):
+        frwin =  Find(self)
+        frwin.show()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

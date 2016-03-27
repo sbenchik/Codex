@@ -1,3 +1,4 @@
+# From Henning Schroeder at https://bitbucket.org/henning/pyqtwidgets/
 # -*- coding: utf-8 -*-
 import atexit
 
