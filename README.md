@@ -10,10 +10,11 @@ Current features are:
 * Tabs
 * Embedded terminal
 * Find and Replace
+* File tree sidebar widget
 
 Features in development are:
 * Snippet support
-* File tree sidebar thingy
+* Opening files from the file tree
 * Support for different colorschemes
 
 # Installation
