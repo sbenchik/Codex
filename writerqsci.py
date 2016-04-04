@@ -254,6 +254,8 @@ class mainWindow(QtGui.QMainWindow):
         self.setWindowTitle("QsciWriter")
         # Set window icon
         self.setWindowIcon(QtGui.QIcon("pencil.png"))
+        # Change the title if the text gets changed
+        self.edit.textChanged.connect(self.unsaved)
 
     def initLexers(self):
         # Dict that maps lexer actions to their respective strings
@@ -319,6 +321,9 @@ class mainWindow(QtGui.QMainWindow):
         self.edit.setModified(False)
         # Set the tab title to filename
         self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(config.filename))
+
+    def unsaved(self):
+        self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(config.filename+"*"))
 
     def about(self):
         QtGui.QMessageBox.about(self, "About QsciWriter",
