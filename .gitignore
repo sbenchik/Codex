@@ -1,4 +1,9 @@
 build/
+
 APIs/
+
 hw.py
+
 setup.py
+
+*.pyc

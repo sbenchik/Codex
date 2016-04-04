@@ -1,17 +1,19 @@
-import sys, os, atexit, functools
+import sys, os, atexit, functools, config
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.Qsci import *
 
-from qtwidgets.x11.terminal import XTerm
-from qtwidgets.find import Find
-from qtwidgets.TextLexer import QsciLexerText
+from x11.terminal import XTerm
+from find import Find
+from TextLexer import QsciLexerText
+from fileTree import Tree
 
 LEXERS = {
-        'BASH': QsciLexerBash(),
+        'Bash': QsciLexerBash(),
         'Batch': QsciLexerBatch(),
+        'C': QsciLexerCPP(),
         'CMake': QsciLexerCMake(),
         'C++': QsciLexerCPP(),
         'C#': QsciLexerCSharp(),
@@ -24,6 +26,7 @@ LEXERS = {
         'IDL': QsciLexerIDL(),
         'Java': QsciLexerJava(),
         'JavaScript': QsciLexerJavaScript(),
+        'JSON': QsciLexerJavaScript(),
         'Lua': QsciLexerLua(),
         'Makefile': QsciLexerMakefile(),
         'MATLAB': QsciLexerMatlab(),
@@ -45,7 +48,6 @@ LEXERS = {
         'XML': QsciLexerXML(),
         'YAML': QsciLexerYAML(),
     }
-
 
 class Editor(QsciScintilla):
     """QScintilla widget used in the editor"""
@@ -93,13 +95,15 @@ class Editor(QsciScintilla):
         self.setAutoCompletionThreshold(4)
         # Set the font of the application to be a mono font
         self.setFont(self.font)
+        # Set the language to plain text by default
+        self.setLexer(QsciLexerText())
 
-class Main(QtGui.QMainWindow):
+class mainWindow(QtGui.QMainWindow):
 
     """Main class that contains everything"""
     def __init__(self, parent = None):
-        super(Main, self).__init__(parent)
-        self.filename = "Untitled"
+        super(mainWindow, self).__init__(parent)
+        config.filename = "Untitled"
         self.tabNum = 1
 
         self.initUI()
@@ -115,7 +119,7 @@ class Main(QtGui.QMainWindow):
 
         self.openAction = QtGui.QAction("Open file",self)
         self.openAction.setShortcut("Ctrl+O")
-        self.openAction.triggered.connect(self.open)
+        self.openAction.triggered.connect(self.openFile)
 
         self.saveAction = QtGui.QAction("Save",self)
         self.saveAction.setShortcut("Ctrl+S")
@@ -173,6 +177,12 @@ class Main(QtGui.QMainWindow):
         self.FRAct.triggered.connect(self.fr)
         self.FRAct.setShortcut("Ctrl+F")
 
+        self.treeAct = QtGui.QAction("Show File Tree",self)
+        self.treeAct.triggered.connect(self.showTree)
+
+        self.hideTreeAct = QtGui.QAction("Hide File Tree",self)
+        self.hideTreeAct.triggered.connect(self.hideTree)
+
     def initMenubar(self):
         menubar = self.menuBar()
 
@@ -202,6 +212,8 @@ class Main(QtGui.QMainWindow):
         view.addAction(self.hideTermAct)
         view.addAction(self.toggleIntAct)
         view.addAction(self.toggleLNAct)
+        view.addAction(self.treeAct)
+        view.addAction(self.hideTreeAct)
 
         about.addAction(self.aboutAction)
 
@@ -218,14 +230,19 @@ class Main(QtGui.QMainWindow):
         self.tab.setMovable(True)
         # Automatically make new tabs contain an editor widget
         self.edit = Editor()
-        self.tab.addTab(self.edit, self.filename)
-        self.split.addWidget(self.tab)
+        self.tab.addTab(self.edit, config.filename)
+        self.termSplit.addWidget(self.tab)
 
     def initUI(self):
-        # Create qsplitter (Allows split screen for terminal)
-        self.split = QSplitter()
-        self.split.setOrientation(Qt.Vertical)
-        self.setCentralWidget(self.split)
+        # Create first qsplitter for sidebar
+        self.treeSplit = QSplitter()
+        self.treeSplit.setOrientation(Qt.Horizontal)
+        # Create second qsplitter (Allows split screen for terminal)
+        self.termSplit = QSplitter()
+        self.termSplit.setOrientation(Qt.Vertical)
+        # Add a termSplit to the treeSplit
+        self.treeSplit.addWidget(self.termSplit)
+        self.setCentralWidget(self.treeSplit)
         # Create everything else
         self.initActions()
         self.initMenubar()
@@ -245,6 +262,7 @@ class Main(QtGui.QMainWindow):
         langGrp.setExclusive(True)
         self.lang.addAction(self.noLexAct)
         self.noLexAct.setCheckable(True)
+        self.noLexAct.setChecked(True)
         self.noLexAct.setActionGroup(langGrp)
         self.lang.addSeparator()
         for i in LEXERS:
@@ -254,44 +272,53 @@ class Main(QtGui.QMainWindow):
             self.lexActs[langAct] = i
         langGrp.triggered.connect(lambda lex: self.edit.setLang(self.lexActs.get(lex)))
 
-    def FNToQString(self, fn):
-        return QString(os.path.basename(str(fn)))
-
     def new(self):
         main = Main()
         main.show()
 
+    def FNToQString(self, fn):
+        return QString(os.path.basename(str(fn)))
+
     def open(self):
-        # Get file names and only show text files
-        self.file = QtGui.QFileDialog.getOpenFileName(self, 'Open File',".")
-        if self.file:
+        try:
             with open(self.file,"rt") as f:
                 self.edit.setText(f.read())
                 # Set the tab title to filename
                 self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(self.file))
-                self.filename = str(self.file)
+        except AttributeError:
+            config.filename = self.file
+            with open(self.file,"rt") as f:
+                self.edit.setText(f.read())
+                # Set the tab title to filename
+                self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(self.file))
+
+    def openFile(self):
+        # Get file names and only show text files
+        self.file = QtGui.QFileDialog.getOpenFileName(self, 'Open File',".")
+        config.filename = str(self.file)
+        self.open()
 
     def save(self):
         # Only open if it hasn't previously been saved
-        if self.filename == "Untitled":
-            self.filename = QtGui.QFileDialog.getSaveFileName(self, 'Save File')
+        if config.filename == "Untitled":
+            config.filename = QtGui.QFileDialog.getSaveFileName(self, 'Save File')
         # Save the file as plain text
-        with open(self.filename, "wt") as file:
+        with open(config.filename, "wt") as file:
             file.write(self.edit.text())
         # Note that changes to the document are saved
         self.edit.setModified(False)
         # Set the tab title to filename
-        self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(self.filename))
+        self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(config.filename))
 
     def saveAs(self):
-        self.filename = QtGui.QFileDialog.getSaveFileName(self, 'Save File')
+        config.filename = QtGui.QFileDialog.getSaveFileName(self, 'Save File')
          # Save the file as plain text
-        with open(self.filename, "wt") as file:
+        with open(config.filename, "wt") as file:
             file.write(self.edit.text())
         # Note that changes to the document are saved
         self.edit.setModified(False)
         # Set the tab title to filename
-        self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(self.filename))
+        self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(config.filename))
 
     def about(self):
         QtGui.QMessageBox.about(self, "About QsciWriter",
@@ -306,12 +333,12 @@ class Main(QtGui.QMainWindow):
         self.tab.setVisible(not state)
 
     def newTab(self):
-        self.tab.addTab(Editor(), self.filename)
+        self.tab.addTab(Editor(), config.filename)
         self.tabNum+=1
         self.tab.setTabsClosable(True)
 
     def showTerm(self):
-        self.split.addWidget(self.term)
+        self.termSplit.addWidget(self.term)
         self.term.resize(600, 50)
         self.term.show_term()
 
@@ -331,12 +358,14 @@ class Main(QtGui.QMainWindow):
             self.edit.setMarginWidth(0,self.edit.metrics.width("00000"))
 
     def fr(self):
-        frwin =  Find(self)
+        frwin = Find(self)
         frwin.show()
 
+    def showTree(self):
+        self.ftree = Tree(self)
+        self.ftree.resize(80,430)
+        self.treeSplit.addWidget(self.ftree)
+        self.ftree.show()
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    main = Main()
-    main.show()
-    app.exec_()
+    def hideTree(self):
+        self.ftree.close()
