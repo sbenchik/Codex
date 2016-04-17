@@ -9,11 +9,9 @@ class QsciLexerText(Qsci.QsciLexerCustom):
     def __init__(self, parent=None):
         Qsci.QsciLexerCustom.__init__(self, parent)
         self._styles = {
+        # There are not other styles because nothing else is needed in a
+        # plain text lexer
              0: 'Default',
-             # 1: 'Comment',
-             # 2: 'Key',
-             # 3: 'Assignment',
-             # 4: 'Value',
              }
         for key,value in self._styles.iteritems():
             setattr(self, value, key)
@@ -24,14 +22,6 @@ class QsciLexerText(Qsci.QsciLexerCustom):
     def defaultColor(self, style):
         if style == self.Default:
             return QtGui.QColor('#000000')
-         # elif style == self.Comment:
-         #     return QtGui.QColor('#C0C0C0')
-         # elif style == self.Key:
-         #     return QtGui.QColor('#0000CC')
-         # elif style == self.Assignment:
-         #     return QtGui.QColor('#CC0000')
-         # elif style == self.Value:
-         #     return QtGui.QColor('#00CC00')
         return Qsci.QsciLexerCustom.defaultColor(self, style)
 
     def defaultFont(self, style):

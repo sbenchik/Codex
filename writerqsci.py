@@ -59,6 +59,7 @@ class Editor(QsciScintilla):
         lexer = self.getLexer(lex)
         lexer.setDefaultFont(self.font)
         self.setLexer(lexer)
+        lexer.setFont(self.font, 1)
         # Setting the lexer resets the margin background to gray
         # so it has to be reset to white
         self.setMarginsBackgroundColor(QColor("White"))
@@ -82,7 +83,7 @@ class Editor(QsciScintilla):
         self.setFolding(QsciScintilla.BoxedTreeFoldStyle)
         self.setFoldMarginColors(QColor("White"),QColor("White"))
         # Set the font to black mono
-        self.font = QtGui.QFont("Mono", 10.5, QFont.Normal)
+        self.font = QtGui.QFont("Mono", 11, QFont.Normal)
         self.metrics = QFontMetrics(self.font)
         self.setMarginWidth(0,self.metrics.width("00000"))
         self.setMarginLineNumbers(0, True)
