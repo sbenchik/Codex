@@ -59,6 +59,7 @@ class Editor(QsciScintilla):
         lexer = self.getLexer(lex)
         lexer.setDefaultFont(self.font)
         self.setLexer(lexer)
+        # Make comments use a mono font
         lexer.setFont(self.font, 1)
         # Setting the lexer resets the margin background to gray
         # so it has to be reset to white
@@ -83,7 +84,7 @@ class Editor(QsciScintilla):
         self.setFolding(QsciScintilla.BoxedTreeFoldStyle)
         self.setFoldMarginColors(QColor("White"),QColor("White"))
         # Set the font to black mono
-        self.font = QtGui.QFont("Mono", 11, QFont.Normal)
+        self.font = QtGui.QFont("Mono", 12, 50)
         self.metrics = QFontMetrics(self.font)
         self.setMarginWidth(0,self.metrics.width("00000"))
         self.setMarginLineNumbers(0, True)
@@ -94,10 +95,10 @@ class Editor(QsciScintilla):
         # Set autocompletion
         self.setAutoCompletionSource(QsciScintilla.AcsDocument)
         self.setAutoCompletionThreshold(4)
-        # Set the font of the application to be a mono font
-        self.setFont(self.font)
         # Set the language to plain text by default
         self.setLexer(QsciLexerText())
+        # Set the font of the application to be a mono font
+        self.setFont(self.font)
 
 class mainWindow(QtGui.QMainWindow):
 
@@ -184,6 +185,9 @@ class mainWindow(QtGui.QMainWindow):
         self.hideTreeAct = QtGui.QAction("Hide File Tree",self)
         self.hideTreeAct.triggered.connect(self.hideTree)
 
+        self.fontAct = QtGui.QAction("Choose Font",self)
+        self.fontAct.triggered.connect(self.chooseFont)
+
     def initMenubar(self):
         menubar = self.menuBar()
 
@@ -200,6 +204,8 @@ class mainWindow(QtGui.QMainWindow):
         file.addAction(self.openAction)
         file.addAction(self.saveAction)
         file.addAction(self.saveasAction)
+        file.addSeparator()
+        file.addAction(self.fontAct)
 
         edit.addAction(self.undoAction)
         edit.addAction(self.redoAction)
@@ -375,3 +381,8 @@ class mainWindow(QtGui.QMainWindow):
 
     def hideTree(self):
         self.ftree.close()
+
+    def chooseFont(self):
+       font, ok = QtGui.QFontDialog.getFont()
+       if ok:
+            self.edit.setFont(font)
