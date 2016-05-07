@@ -9,7 +9,9 @@ from x11.terminal import XTerm
 from find import Find
 from TextLexer import QsciLexerText
 from fileTree import Tree
+from Editor import Editor
 
+# Have to declare it up here because config.LEXERS doesn't get recognized
 LEXERS = {
         'Bash': QsciLexerBash(),
         'Batch': QsciLexerBatch(),
@@ -48,57 +50,6 @@ LEXERS = {
         'XML': QsciLexerXML(),
         'YAML': QsciLexerYAML(),
     }
-
-class Editor(QsciScintilla):
-    """QScintilla widget used in the editor"""
-    def __init__(self, parent = None):
-        super(Editor, self).__init__(parent)
-        self.initUI()
-
-    def setLang(self, lex):
-        lexer = self.getLexer(lex)
-        lexer.setDefaultFont(self.font)
-        self.setLexer(lexer)
-        # Make comments use a mono font
-        lexer.setFont(self.font, 1)
-        # Setting the lexer resets the margin background to gray
-        # so it has to be reset to white
-        self.setMarginsBackgroundColor(QColor("White"))
-
-    def getLexer(self, lex):
-        lexer = LEXERS.get(lex)
-        # Workaround because setting a lexer would set
-        # the background to black and the text to white
-        lexer.setDefaultPaper(QColor("White"))
-        lexer.setDefaultColor(QColor("Black"))
-        return lexer
-
-    def initUI(self):
-        # Enable auto indentation and set them to 4 spaces
-        self.setAutoIndent(True)
-        self.setIndentationWidth(4)
-        self.setIndentationGuides(True)
-        # Enable brace matching
-        self.setBraceMatching(QsciScintilla.SloppyBraceMatch)
-        # Enable code folding
-        self.setFolding(QsciScintilla.BoxedTreeFoldStyle)
-        self.setFoldMarginColors(QColor("White"),QColor("White"))
-        # Set the font to black mono
-        self.font = QtGui.QFont("Mono", 12, 50)
-        self.metrics = QFontMetrics(self.font)
-        self.setMarginWidth(0,self.metrics.width("00000"))
-        self.setMarginLineNumbers(0, True)
-        self.setMarginsBackgroundColor(QColor("White"))
-        # Current line has different color
-        self.setCaretLineVisible(True)
-        self.setCaretLineBackgroundColor(QColor("#E6E6E6"))
-        # Set autocompletion
-        self.setAutoCompletionSource(QsciScintilla.AcsDocument)
-        self.setAutoCompletionThreshold(4)
-        # Set the language to plain text by default
-        self.setLexer(QsciLexerText())
-        # Set the font of the application to be a mono font
-        self.setFont(self.font)
 
 class mainWindow(QtGui.QMainWindow):
 
@@ -188,6 +139,9 @@ class mainWindow(QtGui.QMainWindow):
         self.fontAct = QtGui.QAction("Choose Font",self)
         self.fontAct.triggered.connect(self.chooseFont)
 
+        self.darkAct = QtGui.QAction("Dark Mode",self)
+        self.darkAct.triggered.connect(self.darkMode)
+
     def initMenubar(self):
         menubar = self.menuBar()
 
@@ -221,6 +175,7 @@ class mainWindow(QtGui.QMainWindow):
         view.addAction(self.toggleLNAct)
         view.addAction(self.treeAct)
         view.addAction(self.hideTreeAct)
+        view.addAction(self.darkAct)
 
         about.addAction(self.aboutAction)
 
@@ -282,7 +237,7 @@ class mainWindow(QtGui.QMainWindow):
         langGrp.triggered.connect(lambda lex: self.edit.setLang(self.lexActs.get(lex)))
 
     def new(self):
-        main = Main()
+        main = mainWindow()
         main.show()
 
     def FNToQString(self, fn):
@@ -330,6 +285,7 @@ class mainWindow(QtGui.QMainWindow):
         self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(config.filename))
 
     def unsaved(self):
+        self.saved = False
         self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(config.filename+"*"))
 
     def about(self):
@@ -383,6 +339,35 @@ class mainWindow(QtGui.QMainWindow):
         self.ftree.close()
 
     def chooseFont(self):
-       font, ok = QtGui.QFontDialog.getFont()
+       config.font, ok = QtGui.QFontDialog.getFont()
        if ok:
-            self.edit.setFont(font)
+            self.edit.setFont(config.font)
+
+    # This method adapted from Peter Goldsborough's Writer
+    def closeEvent(self,event):
+        if not self.edit.isModified():
+            event.accept()
+        else:
+            dialog = QtGui.QMessageBox(self)
+            dialog.setIcon(QtGui.QMessageBox.Warning)
+            dialog.setText("This file has unsaved changes.")
+            dialog.setInformativeText("Do you want to save your changes?")
+            dialog.setStandardButtons(QtGui.QMessageBox.Save |
+                                  QtGui.QMessageBox.Cancel |
+                                  QtGui.QMessageBox.Discard)
+            dialog.setDefaultButton(QtGui.QMessageBox.Save)
+            response = dialog.exec_()
+            if response == QtGui.QMessageBox.Save:
+                self.save()
+            elif response == QtGui.QMessageBox.Discard:
+                event.accept()
+            else: event.ignore()
+
+    def darkMode(self):
+        config.dark = True
+        config.lexer.setPaper(QColor("#232323"))
+        self.edit.setMarginsBackgroundColor(QColor("#232323"))
+        self.edit.setFoldMarginColors(QColor("#232323"),QColor("#232323"))
+        self.edit.setMarginsForegroundColor(QColor("White"))
+        self.edit.setCaretLineBackgroundColor(QColor("#525252"))
+        config.lexer.setColor(QColor("White"), 0)
