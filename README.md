@@ -3,7 +3,8 @@ Latest screenshot with i3 on Linux:
 
 ![Image](https://raw.githubusercontent.com/sbenchik/QsciWriter/master/screen.png)
 
-QsciWriter is a basic, SciTE like text editor made with PyQt4 and QScintilla. It is based off [Writer by Peter Goldsborough](https://github.com/goldsborough/Writer).
+QsciWriter is a text editor for code made with PyQt4 and QScintilla.
+
 Current features are:
 * Syntax highlighting
 * Autocompletion
@@ -16,6 +17,8 @@ Features in development are:
 * Snippet support
 * Opening files from the file tree
 * Support for different colorschemes
+* Live preview for Markdown/ReST/HTML files
+* Open files persist throughout opening/closing Codex (a la Sublime Text)
 
 # Installation
 An executable is available for 64 bit Linux. To run it, download the zip and run the Writer executable.
