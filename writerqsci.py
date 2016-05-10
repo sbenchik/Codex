@@ -213,7 +213,7 @@ class mainWindow(QtGui.QMainWindow):
         self.term = XTerm(self)
         # x and y coordinates on the screen, width, height
         self.setGeometry(100,100,600,430)
-        self.setWindowTitle("QsciWriter")
+        self.setWindowTitle("Codex")
         # Set window icon
         self.setWindowIcon(QtGui.QIcon("pencil.png"))
         # Change the title if the text gets changed
@@ -289,8 +289,8 @@ class mainWindow(QtGui.QMainWindow):
         self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(config.filename+"*"))
 
     def about(self):
-        QtGui.QMessageBox.about(self, "About QsciWriter",
-                                "<p>QsciWriter is a text editor " \
+        QtGui.QMessageBox.about(self, "About Codex",
+                                "<p>Codex is a text editor " \
                                 "made with PyQt4 and QScintilla." \
                                 " It is based off Peter Goldsborough's "
                                 "Writer tutorial from binpress.com.</p>"
