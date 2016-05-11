@@ -215,7 +215,7 @@ class mainWindow(QtGui.QMainWindow):
         self.setGeometry(100,100,600,430)
         self.setWindowTitle("Codex")
         # Set window icon
-        self.setWindowIcon(QtGui.QIcon("pencil.png"))
+        self.setWindowIcon(QtGui.QIcon("Icon.png"))
         # Change the title if the text gets changed
         self.edit.textChanged.connect(self.unsaved)
 
@@ -290,10 +290,8 @@ class mainWindow(QtGui.QMainWindow):
 
     def about(self):
         QtGui.QMessageBox.about(self, "About Codex",
-                                "<p>Codex is a text editor " \
-                                "made with PyQt4 and QScintilla." \
-                                " It is based off Peter Goldsborough's "
-                                "Writer tutorial from binpress.com.</p>"
+                                "<p>Codex is an advanced text editor " \
+                                "made with PyQt4 and QScintilla.</p>"
                                 )
 
     def toggleTabs(self):
