@@ -5,10 +5,10 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.Qsci import *
 
-from x11.terminal import XTerm
-from find import Find
-from TextLexer import QsciLexerText
-from fileTree import Tree
+from ext.terminal import XTerm
+from ext.find import Find
+from ext.TextLexer import QsciLexerText
+from ext.fileTree import Tree
 from Editor import Editor
 
 # Have to declare it up here because config.LEXERS doesn't get recognized
@@ -215,7 +215,7 @@ class mainWindow(QtGui.QMainWindow):
         self.setGeometry(100,100,600,430)
         self.setWindowTitle("QsciWriter")
         # Set window icon
-        self.setWindowIcon(QtGui.QIcon("Icon.png"))
+        self.setWindowIcon(QtGui.QIcon("icons/codex.svg"))
         # Change the title if the text gets changed
         self.edit.textChanged.connect(self.unsaved)
 
