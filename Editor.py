@@ -2,7 +2,7 @@ import sys, config
 from PyQt4 import QtCore, QtGui, Qsci
 from PyQt4.QtGui import *
 from PyQt4.Qsci import *
-from TextLexer import QsciLexerText
+from ext.TextLexer import QsciLexerText
 
 class Editor(QsciScintilla):
     """QScintilla widget used in the editor"""

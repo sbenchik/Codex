@@ -2,7 +2,7 @@ from PyQt4 import QtCore, QtGui, Qsci
 from PyQt4.Qsci import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from TextLexer import QsciLexerText
+from ext.TextLexer import QsciLexerText
 
 LEXERS = {
         'Bash': QsciLexerBash(),
