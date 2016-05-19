@@ -214,8 +214,10 @@ class mainWindow(QtGui.QMainWindow):
         # x and y coordinates on the screen, width, height
         self.setGeometry(100,100,600,430)
         self.setWindowTitle("Codex")
-        # Set window icon
-        self.setWindowIcon(QtGui.QIcon("icons/codex.svg"))
+        # Move up to the parent directory and set the window icons.
+        # Without os.path it will look for icons in bin/
+        self.setWindowIcon(QtGui.QIcon(os.path.join(
+                                os.path.dirname(__file__))+"/icons/codex.svg"))
         # Change the title if the text gets changed
         self.edit.textChanged.connect(self.unsaved)
 
@@ -305,7 +307,6 @@ class mainWindow(QtGui.QMainWindow):
 
     def showTerm(self):
         self.termSplit.addWidget(self.term)
-        self.term.resize(600, 50)
         self.term.show_term()
 
     def hideTerm(self):

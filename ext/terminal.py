@@ -1,7 +1,8 @@
 # From Henning Schroeder at https://bitbucket.org/henning/pyqtwidgets/
 # -*- coding: utf-8 -*-
-import atexit
+import subprocess, atexit
 
+from PyQt4 import QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
@@ -21,10 +22,6 @@ class XTerm(QX11EmbedContainer):
         self.process.kill()
         self.process.waitForFinished()
 
-    def sizeHint(self):
-        size = QSize(400, 300)
-        return size.expandedTo(QApplication.globalStrut())
-
     def show_term(self):
         args = [
             "-into",
@@ -39,10 +36,17 @@ class XTerm(QX11EmbedContainer):
             # blink cursor
             "-bc",
         ]
+        self.checkForTerm()
         self.process.start(self.xterm_cmd, args)
-        if self.process.error() == QProcess.FailedToStart:
-            print "xterm not installed"
 
     def on_term_close(self, exit_code, exit_status):
-        print "close", exit_code, exit_status
         self.close()
+
+    def checkForTerm(self):
+        if "xterm" not in str(subprocess.Popen("which xterm",shell=True).wait()):
+            dialog = QtGui.QMessageBox(self)
+            dialog.setIcon(QtGui.QMessageBox.Warning)
+            dialog.setText("XTerm not installed")
+            dialog.setInformativeText("XTerm not installed")
+            dialog.setStandardButtons(QtGui.QMessageBox.Cancel)
+            dialog.setDefaultButton(QtGui.QMessageBox.Cancel)
