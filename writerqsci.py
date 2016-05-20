@@ -1,55 +1,17 @@
-import sys, os, atexit, functools, config
+import sys, os, atexit, functools
+import config
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.Qsci import *
+from pygments import highlight
 
 from ext.terminal import XTerm
 from ext.find import Find
 from ext.TextLexer import QsciLexerText
 from ext.fileTree import Tree
 from Editor import Editor
-
-# Have to declare it up here because config.LEXERS doesn't get recognized
-LEXERS = {
-        'Bash': QsciLexerBash(),
-        'Batch': QsciLexerBatch(),
-        'C': QsciLexerCPP(),
-        'CMake': QsciLexerCMake(),
-        'C++': QsciLexerCPP(),
-        'C#': QsciLexerCSharp(),
-        'CSS': QsciLexerCSS(),
-        'D': QsciLexerD(),
-        'Diff': QsciLexerDiff(),
-        'Fortran': QsciLexerFortran(),
-        'Fortran77': QsciLexerFortran77(),
-        'HTML': QsciLexerHTML(),
-        'IDL': QsciLexerIDL(),
-        'Java': QsciLexerJava(),
-        'JavaScript': QsciLexerJavaScript(),
-        'JSON': QsciLexerJavaScript(),
-        'Lua': QsciLexerLua(),
-        'Makefile': QsciLexerMakefile(),
-        'MATLAB': QsciLexerMatlab(),
-        'Octave': QsciLexerOctave(),
-        'Pascal': QsciLexerPascal(),
-        'Perl': QsciLexerPerl(),
-        'PHP': QsciLexerHTML(),
-        'PostScript': QsciLexerPostScript(),
-        'POV': QsciLexerPOV(),
-        'Properties': QsciLexerProperties(),
-        'Python': QsciLexerPython(),
-        'Ruby': QsciLexerRuby(),
-        'Spice': QsciLexerSpice(),
-        'SQL': QsciLexerSQL(),
-        'TCL': QsciLexerTCL(),
-        'TeX': QsciLexerTeX(),
-        'Verilog': QsciLexerVerilog(),
-        'VHDL': QsciLexerVHDL(),
-        'XML': QsciLexerXML(),
-        'YAML': QsciLexerYAML(),
-    }
 
 class mainWindow(QtGui.QMainWindow):
 
@@ -58,7 +20,6 @@ class mainWindow(QtGui.QMainWindow):
         super(mainWindow, self).__init__(parent)
         config.filename = "Untitled"
         self.tabNum = 1
-
         self.initUI()
 
     def initActions(self):
@@ -139,8 +100,8 @@ class mainWindow(QtGui.QMainWindow):
         self.fontAct = QtGui.QAction("Choose Font",self)
         self.fontAct.triggered.connect(self.chooseFont)
 
-        self.darkAct = QtGui.QAction("Dark Mode",self)
-        self.darkAct.triggered.connect(self.darkMode)
+        #self.darkAct = QtGui.QAction("Dark Mode",self)
+        #self.darkAct.triggered.connect(self.darkMode)
 
     def initMenubar(self):
         menubar = self.menuBar()
@@ -151,7 +112,7 @@ class mainWindow(QtGui.QMainWindow):
         view = menubar.addMenu("View")
         about = menubar.addMenu("About")
 
-        self.initLexers()
+        #self.initLexers()
 
         file.addAction(self.newAction)
         file.addAction(self.newTabAction)
@@ -175,7 +136,7 @@ class mainWindow(QtGui.QMainWindow):
         view.addAction(self.toggleLNAct)
         view.addAction(self.treeAct)
         view.addAction(self.hideTreeAct)
-        view.addAction(self.darkAct)
+        #view.addAction(self.darkAct)
 
         about.addAction(self.aboutAction)
 
@@ -219,22 +180,22 @@ class mainWindow(QtGui.QMainWindow):
         # Change the title if the text gets changed
         self.edit.textChanged.connect(self.unsaved)
 
-    def initLexers(self):
-        # Dict that maps lexer actions to their respective strings
-        self.lexActs = {}
-        langGrp = QActionGroup(self.lang)
-        langGrp.setExclusive(True)
-        self.lang.addAction(self.noLexAct)
-        self.noLexAct.setCheckable(True)
-        self.noLexAct.setChecked(True)
-        self.noLexAct.setActionGroup(langGrp)
-        self.lang.addSeparator()
-        for i in LEXERS:
-            langAct = self.lang.addAction(i)
-            langAct.setCheckable(True)
-            langAct.setActionGroup(langGrp)
-            self.lexActs[langAct] = i
-        langGrp.triggered.connect(lambda lex: self.edit.setLang(self.lexActs.get(lex)))
+     # def initLexers(self):
+     #    # Dict that maps lexer actions to their respective strings
+     #    self.lexActs = {}
+     #    langGrp = QActionGroup(self.lang)
+     #    langGrp.setExclusive(True)
+     #    self.lang.addAction(self.noLexAct)
+     #    self.noLexAct.setCheckable(True)
+     #    self.noLexAct.setChecked(True)
+     #    self.noLexAct.setActionGroup(langGrp)
+     #    self.lang.addSeparator()
+     #    for i in LEXERS:
+     #        langAct = self.lang.addAction(i)
+     #        langAct.setCheckable(True)
+     #        langAct.setActionGroup(langGrp)
+     #        self.lexActs[langAct] = i
+     #    langGrp.triggered.connect(lambda lex: self.edit.setLang(self.lexActs.get(lex)))
 
     def new(self):
         main = mainWindow()
@@ -247,12 +208,14 @@ class mainWindow(QtGui.QMainWindow):
         try:
             with open(self.file,"rt") as f:
                 self.edit.setText(f.read())
+                self.edit.setText(highlight(str(self.edit.text()), config.lexer, config.f))
                 # Set the tab title to filename
                 self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(self.file))
         except AttributeError:
             config.filename = self.file
             with open(self.file,"rt") as f:
                 self.edit.setText(f.read())
+                self.edit.setText(highlight(str(self.edit.text()), config.lexer, config.f))
                 # Set the tab title to filename
                 self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(self.file))
 
@@ -361,11 +324,11 @@ class mainWindow(QtGui.QMainWindow):
                 event.accept()
             else: event.ignore()
 
-    def darkMode(self):
-        config.dark = True
-        config.lexer.setPaper(QColor("#232323"))
-        self.edit.setMarginsBackgroundColor(QColor("#232323"))
-        self.edit.setFoldMarginColors(QColor("#232323"),QColor("#232323"))
-        self.edit.setMarginsForegroundColor(QColor("White"))
-        self.edit.setCaretLineBackgroundColor(QColor("#525252"))
-        config.lexer.setColor(QColor("White"), 0)
+    # def darkMode(self):
+    #     config.dark = True
+    #     config.lexer.setPaper(QColor("#232323"))
+    #     self.edit.setMarginsBackgroundColor(QColor("#232323"))
+    #     self.edit.setFoldMarginColors(QColor("#232323"),QColor("#232323"))
+    #     self.edit.setMarginsForegroundColor(QColor("White"))
+    #     self.edit.setCaretLineBackgroundColor(QColor("#525252"))
+    #     config.lexer.setColor(QColor("White"), 0)
