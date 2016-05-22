@@ -1,4 +1,9 @@
-import os, config
+"""
+File tree widget. Currently major WIP.
+"""
+
+import os
+import src.config
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *

@@ -1,17 +1,21 @@
+"""
+Implementation of the editor component for Codex
+"""
+
 import sys, config
 from PyQt4 import QtCore, QtGui, Qsci
 from PyQt4.QtGui import *
 from PyQt4.Qsci import *
-from ext.TextLexer import QsciLexerText
+from lexers.TextLexer import QsciLexerText
+from lexers import *
 
 class Editor(QsciScintilla):
-    """QScintilla widget used in the editor"""
     def __init__(self, parent = None):
         super(Editor, self).__init__(parent)
         self.initUI()
 
     def setLang(self, lex):
-        config.lexer = self.getLexer(lex)
+        config.lexer = lexers.getLexer(lex)
         config.lexer.setDefaultFont(config.font)
         self.setLexer(config.lexer)
         # Setting the lexer resets the margin background to gray

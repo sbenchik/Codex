@@ -1,4 +1,9 @@
-import sys, os, atexit, functools, config
+"""
+Class for the main window that contains tabs, editor, terminal, etc.
+"""
+
+import sys, os, atexit, functools
+import config
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
@@ -7,53 +12,14 @@ from PyQt4.Qsci import *
 
 from ext.terminal import XTerm
 from ext.find import Find
-from ext.TextLexer import QsciLexerText
 from ext.fileTree import Tree
-from Editor import Editor
 
-# Have to declare it up here because config.LEXERS doesn't get recognized
-LEXERS = {
-        'Bash': QsciLexerBash(),
-        'Batch': QsciLexerBatch(),
-        'C': QsciLexerCPP(),
-        'CMake': QsciLexerCMake(),
-        'C++': QsciLexerCPP(),
-        'C#': QsciLexerCSharp(),
-        'CSS': QsciLexerCSS(),
-        'D': QsciLexerD(),
-        'Diff': QsciLexerDiff(),
-        'Fortran': QsciLexerFortran(),
-        'Fortran77': QsciLexerFortran77(),
-        'HTML': QsciLexerHTML(),
-        'IDL': QsciLexerIDL(),
-        'Java': QsciLexerJava(),
-        'JavaScript': QsciLexerJavaScript(),
-        'JSON': QsciLexerJavaScript(),
-        'Lua': QsciLexerLua(),
-        'Makefile': QsciLexerMakefile(),
-        'MATLAB': QsciLexerMatlab(),
-        'Octave': QsciLexerOctave(),
-        'Pascal': QsciLexerPascal(),
-        'Perl': QsciLexerPerl(),
-        'PHP': QsciLexerHTML(),
-        'PostScript': QsciLexerPostScript(),
-        'POV': QsciLexerPOV(),
-        'Properties': QsciLexerProperties(),
-        'Python': QsciLexerPython(),
-        'Ruby': QsciLexerRuby(),
-        'Spice': QsciLexerSpice(),
-        'SQL': QsciLexerSQL(),
-        'TCL': QsciLexerTCL(),
-        'TeX': QsciLexerTeX(),
-        'Verilog': QsciLexerVerilog(),
-        'VHDL': QsciLexerVHDL(),
-        'XML': QsciLexerXML(),
-        'YAML': QsciLexerYAML(),
-    }
+from lexers.TextLexer import QsciLexerText
+from lexers.lexerpygments import LexerPygments
+from Editor import Editor
 
 class mainWindow(QtGui.QMainWindow):
 
-    """Main class that contains everything"""
     def __init__(self, parent = None):
         super(mainWindow, self).__init__(parent)
         config.filename = "Untitled"
@@ -102,7 +68,7 @@ class mainWindow(QtGui.QMainWindow):
         self.redoAction.setShortcut("Ctrl+Y")
         self.redoAction.triggered.connect(lambda redo: self.edit.redo)
 
-        self.aboutAction = QtGui.QAction("About Writer",self)
+        self.aboutAction = QtGui.QAction("About Codex",self)
         self.aboutAction.triggered.connect(self.about)
 
         self.noLexAct = QtGui.QAction("Plain Text",self)
@@ -217,8 +183,9 @@ class mainWindow(QtGui.QMainWindow):
         # Move up to the parent directory and set the window icons.
         # Without os.path it will look for icons in bin/
         self.setWindowIcon(QtGui.QIcon(os.path.join(
-                                os.path.dirname(__file__))+"/icons/codex.svg"))
-        # Change the title if the text gets changed
+                                os.path.dirname(os.path.dirname(__file__)))+ \
+                                "/icons/codex.svg"))
+        # Change the filename if there are unsaved changes
         self.edit.textChanged.connect(self.unsaved)
 
     def initLexers(self):
@@ -231,12 +198,14 @@ class mainWindow(QtGui.QMainWindow):
         self.noLexAct.setChecked(True)
         self.noLexAct.setActionGroup(langGrp)
         self.lang.addSeparator()
-        for i in LEXERS:
+        languages = sorted(config.LEXERS.keys())
+        for i in languages:
             langAct = self.lang.addAction(i)
             langAct.setCheckable(True)
             langAct.setActionGroup(langGrp)
             self.lexActs[langAct] = i
-        langGrp.triggered.connect(lambda lex: self.edit.setLang(self.lexActs.get(lex)))
+        langGrp.triggered.connect(  \
+            lambda lex: self.edit.setLang(self.lexActs.get(lex)))
 
     def new(self):
         main = mainWindow()
@@ -292,7 +261,7 @@ class mainWindow(QtGui.QMainWindow):
 
     def about(self):
         QtGui.QMessageBox.about(self, "About Codex",
-                                "<p>Codex is an advanced text editor " \
+                                "<p>Codex is a basic text editor for code " \
                                 "made with PyQt4 and QScintilla.</p>"
                                 )
 
@@ -349,7 +318,7 @@ class mainWindow(QtGui.QMainWindow):
         else:
             dialog = QtGui.QMessageBox(self)
             dialog.setIcon(QtGui.QMessageBox.Warning)
-            dialog.setText("This file has unsaved changes.")
+            dialog.setText(config.filename+" has unsaved changes.")
             dialog.setInformativeText("Do you want to save your changes?")
             dialog.setStandardButtons(QtGui.QMessageBox.Save |
                                   QtGui.QMessageBox.Cancel |
