@@ -202,73 +202,110 @@ def getLexer(language, parent=None, pyname=""):
     if not pyname:
         try:
             if language in ["Python", "Python2", "Python3"]:
-                return QsciLexerPython(language, parent)
+                from PyQt4.Qsci import QsciLexerPython
+                return QsciLexerPython(parent)
             elif language == "C++":
+                from PyQt4.Qsci import QsciLexerCPP
                 return QsciLexerCPP(parent)
             elif language == "C#":
+                from PyQt4.Qsci import QsciLexerCSharp
                 return QsciLexerCSharp(parent)
             elif language == "IDL":
+                from PyQt4.Qsci import QsciLexerIDL
                 return QsciLexerIDL(parent)
             elif language == "Java":
+                from PyQt4.Qsci import QsciLexerJava
                 return QsciLexerJava(parent)
             elif language == "JavaScript":
+                from PyQt4.Qsci import QsciLexerJavaScript
                 return QsciLexerJavaScript(parent)
             elif language == "SQL":
+                from PyQt4.Qsci import QsciLexerSQL
                 return QsciLexerSQL(parent)
             elif language == "HTML":
+                from PyQt4.Qsci import QsciLexerHTML
                 return QsciLexerHTML(parent)
             elif language == "Perl":
+                from PyQt4.Qsci import QsciLexerPerl
                 return QsciLexerPerl(parent)
             elif language == "Bash":
+                from PyQt4.Qsci import QsciLexerBash
                 return QsciLexerBash(parent)
             elif language == "Ruby":
+                from PyQt4.Qsci import QsciLexerRuby
                 return QsciLexerRuby(parent)
             elif language == "Lua":
+                from PyQt4.Qsci import QsciLexerLua
                 return QsciLexerLua(parent)
             elif language == "CSS":
+                from PyQt4.Qsci import QsciLexerCSS
                 return QsciLexerCSS(parent)
             elif language == "TeX":
+                from PyQt4.Qsci import QsciLexerTeX
                 return QsciLexerTeX(parent)
             elif language == "Diff":
+                from PyQt4.Qsci import QsciLexerDiff
                 return QsciLexerDiff(parent)
             elif language == "Makefile":
+                from PyQt4.Qsci import QsciLexerMakefile
                 return QsciLexerMakefile(parent)
             elif language == "Properties":
+                from PyQt4.Qsci import QsciLexerProperties
                 return QsciLexerProperties(parent)
             elif language == "Batch":
+                from PyQt4.Qsci import QsciLexerBatch
                 return QsciLexerBatch(parent)
             elif language == "D":
+                from PyQt4.Qsci import QsciLexerD
                 return QsciLexerD(parent)
             elif language == "Povray":
+                from PyQt4.Qsci import QsciLexerPOV
                 return QsciLexerPOV(parent)
             elif language == "CMake":
+                from PyQt4.Qsci import QsciLexerCMake
                 return QsciLexerCMake(parent)
             elif language == "VHDL":
+                from PyQt4.Qsci import QsciLexerVDHL
                 return QsciLexerVHDL(parent)
             elif language == "TCL":
+                from PyQt4.Qsci import QsciLexerTCL
                 return QsciLexerTCL(parent)
             elif language == "Fortran":
+                from PyQt4.Qsci import QsciLexerFortran
                 return QsciLexerFortran(parent)
             elif language == "Fortran77":
+                from PyQt4.Qsci import QsciLexerFortran77
                 return QsciLexerFortran77(parent)
             elif language == "Pascal":
+                from PyQt4.Qsci import QsciLexerPascal
                 return QsciLexerPascal(parent)
             elif language == "PostScript":
+                from PyQt4.Qsci import QsciLexerPostScript
                 return QsciLexerPostScript(parent)
             elif language == "XML":
+                from PyQt4.Qsci import QsciLexerXML
                 return QsciLexerXML(parent)
             elif language == "YAML":
+                from PyQt4.Qsci import QsciLexerYAML
                 return QsciLexerYAML(parent)
             elif language == "Matlab":
+                from PyQt4.Qsci import QsciLexerMatlab
                 return QsciLexerMatlab(parent)
             elif language == "Octave":
+                from PyQt4.Qsci import QsciLexerOctave
                 return QsciLexerOctave(parent)
             elif language == "QSS":
+                from PyQt4.Qsci import QsciLexerQSS
                 return QsciLexerQSS(parent)
-            elif language == "POV-Ray":
+            elif language == "Gettext":
+                from PyQt4.Qsci import QsciLexerPO
                 return QsciLexerPO(parent)
             elif language == "CoffeeScript":
+                from PyQt4.Qsci import QsciLexerCoffeeScript
                 return QsciLexerCoffeeScript(parent)
+            elif language == "Plain Text":
+                from lexers.TextLexer import QsciLexerText
+                return QsciLexerText(parent)
 
             elif language in LexerRegistry:
                 return LexerRegistry[language][2](parent)
@@ -279,6 +316,7 @@ def getLexer(language, parent=None, pyname=""):
             return __getPygmentsLexer(parent)
     else:
         return __getPygmentsLexer(parent, name=pyname)
+
 
 
 def __getPygmentsLexer(parent, name=""):

@@ -307,7 +307,7 @@ class LexerPygments(LexerContainer):
         @param style style number (integer)
         @return font (QFont)
         """
-        import config
+        from .. import config
         if style in [PYGMENTS_COMMENT, PYGMENTS_PREPROCESSOR,
                      PYGMENTS_MULTILINECOMMENT]:
             f = config.font
@@ -322,16 +322,16 @@ class LexerPygments(LexerContainer):
                      PYGMENTS_ENTITY, PYGMENTS_TAG, PYGMENTS_SCALAR,
                      PYGMENTS_ESCAPE, PYGMENTS_HEADING, PYGMENTS_SUBHEADING,
                      PYGMENTS_STRONG, PYGMENTS_PROMPT]:
-            f = LexerContainer.defaultFont(self, style)
+            f = config.font
             f.setBold(True)
             return f
 
         if style in [PYGMENTS_DOCSTRING, PYGMENTS_EMPHASIZE]:
-            f = LexerContainer.defaultFont(self, style)
+            f = config.font
             f.setItalic(True)
             return f
 
-        return LexerContainer.defaultFont(self, style)
+        return config.font
 
     def defaultEolFill(self, style):
         """
@@ -360,30 +360,31 @@ class LexerPygments(LexerContainer):
         @param text text to base guessing on (string)
         @return reference to the guessed lexer (pygments.lexer)
         """
+        from .. import config
         lexer = None
-        import config
+
         if self.__pygmentsName:
             lexerClass = find_lexer_class(self.__pygmentsName)
             if lexerClass is not None:
                 lexer = lexerClass()
 
-        elif text:
+        elif config.m.edit.text():
             # step 1: guess based on filename and text
-            if self.edit is not None:
-                fn = self.edit.getFileName()
+            if config.m.edit is not None:
+                fn = config.filename
                 if fn:
                     try:
-                        lexer = guess_lexer_for_filename(fn, text)
+                        lexer = guess_lexer_for_filename(fn,
+                                    str(config.m.edit.text()))
                     except ClassNotFound:
-                        pass
+                        print "a"
 
             # step 2: guess on text only
             if lexer is None:
                 try:
-                    lexer = guess_lexer(text)
+                    lexer = guess_lexer(str(config.m.edit.text()))
                 except ClassNotFound:
-                    pass
-
+                    print "b"
         return lexer
 
     def canStyle(self):
@@ -392,12 +393,13 @@ class LexerPygments(LexerContainer):
 
         @return flag indicating the lexer capability (boolean)
         """
-        import config
-        if self.edit is None:
+        from .. import config
+
+        if config.m.edit is None:
             return True
 
-        text = self.edit.text()
-        self.__lexer = self.__guessLexer(text)
+        text = config.m.edit.text()
+        self.__lexer = self.__guessLexer(str(text))
 
         return self.__lexer is not None
 
@@ -419,8 +421,9 @@ class LexerPygments(LexerContainer):
         @param start position of first character to be styled (integer)
         @param end position of last character to be styled (integer)
         """
-        import config
-        text = conif.m.edit.text()[:end + 1]
+        from .. import config
+
+        text = str(config.m.edit.text()[:end + 1])
         textLen = len(text.encode("utf-8"))
         self.__lexer = self.__guessLexer(text)
 
@@ -433,11 +436,11 @@ class LexerPygments(LexerContainer):
             else:
                 break
 
-        self.edit.startStyling(cpos, 0x3f)
+        config.m.edit.startStyling(cpos, 0x3f)
         if self.__lexer is None:
-            self.edit.setStyling(len(text), PYGMENTS_DEFAULT)
+            config.m.edit.setStyling(len(text), PYGMENTS_DEFAULT)
         else:
-            eolLen = len(self.edit.getLineSeparator())
+            eolLen = len(config.m.edit.getLineSeparator())
             for token, txt in self.__lexer.get_tokens(text):
                 style = TOKEN_MAP.get(token, PYGMENTS_DEFAULT)
 
@@ -446,10 +449,10 @@ class LexerPygments(LexerContainer):
                     tlen += txt.count('\n')
                 cpos += tlen
                 if tlen and cpos < textLen:
-                    self.edit.setStyling(tlen, style)
+                    config.m.edit.setStyling(tlen, style)
                 if cpos >= textLen:
                     break
-            self.edit.startStyling(cpos, 0x3f)
+            config.m.edit.startStyling(cpos, 0x3f)
 
     def isCommentStyle(self, style):
         """

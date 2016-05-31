@@ -2,12 +2,12 @@
 Implementation of the editor component for Codex
 """
 
-import sys, config
+import sys, config, lexers
 from PyQt4 import QtCore, QtGui, Qsci
 from PyQt4.QtGui import *
 from PyQt4.Qsci import *
 from lexers.TextLexer import QsciLexerText
-from lexers import *
+from lexers.lexerpygments import LexerPygments
 
 class Editor(QsciScintilla):
     def __init__(self, parent = None):
@@ -21,12 +21,12 @@ class Editor(QsciScintilla):
         # Setting the lexer resets the margin background to gray
         # so it has to be reset to white
         self.setMarginsBackgroundColor(QColor("White"))
-        # Comments use a serifed font by default so
+        # Comments use a different font by default so
         # they have to be set to use the same font
-        self.lexer.setFont(config.font, 1)
+        config.lexer.setFont(config.font, 1)
         if config.dark:
-            # Setting a new lexer resets some dark mode settings, so method has to
-            # be run again
+            # Setting a new lexer undoes some dark mode settings, so dark mode
+            # has to be reset
             config.m.darkMode()
             config.lexer.setColor(QColor("White"))
 
@@ -62,3 +62,23 @@ class Editor(QsciScintilla):
         self.setLexer(config.lexer)
         # Set the font of the application to be a mono font
         config.lexer.setFont(config.font)
+
+    # These three methods are taken from eric 6 and are needed for the
+    # Pygments lexer
+    def startStyling(self, pos, mask):
+        self.SendScintilla(QsciScintilla.SCI_STARTSTYLING, pos, mask)
+
+    def setStyling(self, length, style):
+        self.SendScintilla(QsciScintilla.SCI_SETSTYLING, length, style)
+
+    def getLineSeparator(self):
+        m = self.eolMode()
+        if m == QsciScintilla.EolWindows:
+             eol = '\r\n'
+        elif m == QsciScintilla.EolUnix:
+            eol = '\n'
+        elif m == QsciScintilla.EolMac:
+           eol = '\r'
+        else:
+           eol = ''
+        return eol

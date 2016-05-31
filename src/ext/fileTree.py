@@ -1,5 +1,5 @@
 """
-File tree widget. Currently major WIP.
+File tree widget for Codex
 """
 
 import os
@@ -15,9 +15,13 @@ class Tree(QWidget):
 
     def initUI(self):
         self.fsModel = QtGui.QFileSystemModel()
-        self.fsIndex = self.fsModel.setRootPath(QString(os.path.dirname(str(config.filename))))
+        # Starting 1 directory higher seems like a good place
+        # TODO: Allow user to set a working directory to use for root
+        self.fsIndex = self.fsModel.setRootPath(QString(os.path.dirname(os.path.dirname(str(src.config.filename)))))
         self.treeView = QtGui.QTreeView(self)
         self.treeView.setModel(self.fsModel)
+        self.treeView.setDragEnabled(True)
+        self.treeView.setDragDropMode(QAbstractItemView.InternalMove)
         self.treeView.setRootIndex(self.fsIndex)
         self.treeView.setAnimated(True)
         self.treeView.setHeaderHidden(True)
@@ -25,16 +29,9 @@ class Tree(QWidget):
         self.treeView.hideColumn(2)
         self.treeView.hideColumn(3)
         self.treeView.resize(150,430)
-        #self.treeView.clicked.connect(self.clicked)
+        self.treeView.clicked.connect(self.clicked)
 
-        # TODO: make this work so you can open files from the tree
-    # def clicked(self):
-    #     self.selModel = self.treeView.selectionModel()
-    #     index = self.selModel.currentIndex()
-    #     import runner
-    #     with open(m.file,"rt") as f:
-    #         runner.m.edit.setText(f.read())
-    #         print "a"
-    #         # Set the tab title to filename
-    #         runner.m.tab.setTabText(runner.m.tab.currentIndex(),
-    #                                    runner.m.FNToQString(runner.m.file))
+    def clicked(self):
+        self.file = self.fsModel.fileName(self.fsIndex)
+        src.config.filename = str(self.file)
+        src.config.m.open()

@@ -220,12 +220,14 @@ class mainWindow(QtGui.QMainWindow):
                 self.edit.setText(f.read())
                 # Set the tab title to filename
                 self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(self.file))
+                self.edit.setModified(False)
         except AttributeError:
             config.filename = self.file
             with open(self.file,"rt") as f:
                 self.edit.setText(f.read())
                 # Set the tab title to filename
                 self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(self.file))
+                self.edit.setModified(False)
 
     def openFile(self):
         # Get file names and only show text files
