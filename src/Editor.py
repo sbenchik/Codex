@@ -16,19 +16,36 @@ class Editor(QsciScintilla):
 
     def setLang(self, lex):
         config.lexer = lexers.getLexer(lex)
-        config.lexer.setDefaultFont(config.font)
-        self.setLexer(config.lexer)
+        if self.initPygments() is not None:
+            self.setLexer(self.initPygments())
+            config.lexer.setDefaultFont(config.font)
+        else:
+            self.setLexer(config.lexer)
+            config.lexer.setDefaultFont(config.font)
         # Setting the lexer resets the margin background to gray
         # so it has to be reset to white
         self.setMarginsBackgroundColor(QColor("White"))
         # Comments use a different font by default so
         # they have to be set to use the same font
+        #config.lexer.setFont(config.font)
         config.lexer.setFont(config.font, 1)
         if config.dark:
             # Setting a new lexer undoes some dark mode settings, so dark mode
             # has to be reset
             config.m.darkMode()
             config.lexer.setColor(QColor("White"))
+
+    # Most of this code taken from eric6
+    def initPygments(self):
+        if config.lexer.language() == "Guessed":
+            language = config.lexer.name()
+            from lexers.lexerpygments import LexerPygments
+            config.lexer = LexerPygments(name=language)
+            print config.lexer
+            if config.lexer.canStyle():
+                return config.lexer
+            else:
+                return None
 
     def getLexer(self, lex):
         self.lexer = config.LEXERS.get(lex)

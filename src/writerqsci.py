@@ -188,6 +188,7 @@ class mainWindow(QtGui.QMainWindow):
         # Change the filename if there are unsaved changes
         self.edit.textChanged.connect(self.unsaved)
 
+    # Populates languages menu and binds entries to lexers
     def initLexers(self):
         # Dict that maps lexer actions to their respective strings
         self.lexActs = {}
