@@ -367,6 +367,7 @@ class LexerPygments(LexerContainer):
             lexerClass = find_lexer_class(self.__pygmentsName)
             if lexerClass is not None:
                 lexer = lexerClass()
+                print lexer
 
         elif config.m.edit.text():
             # step 1: guess based on filename and text
@@ -376,6 +377,7 @@ class LexerPygments(LexerContainer):
                     try:
                         lexer = guess_lexer_for_filename(fn,
                                     str(config.m.edit.text()))
+                        print lexer
                     except ClassNotFound:
                         print "a"
 
@@ -383,6 +385,7 @@ class LexerPygments(LexerContainer):
             if lexer is None:
                 try:
                     lexer = guess_lexer(str(config.m.edit.text()))
+                    print lexer
                 except ClassNotFound:
                     print "b"
         return lexer
@@ -426,7 +429,7 @@ class LexerPygments(LexerContainer):
         text = str(config.m.edit.text()[:end + 1])
         textLen = len(text.encode("utf-8"))
         self.__lexer = self.__guessLexer(text)
-
+        print self.__lexer
         cpos = 0
         # adjust start position because pygments ignores empty line at
         # start of text
@@ -452,7 +455,7 @@ class LexerPygments(LexerContainer):
                     config.m.edit.setStyling(tlen, style)
                 if cpos >= textLen:
                     break
-            config.m.edit.startStyling(cpos, 0x3f)
+            #config.m.edit.startStyling(cpos, 0x3f)
 
     def isCommentStyle(self, style):
         """

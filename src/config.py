@@ -7,7 +7,6 @@ from PyQt4.Qsci import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from lexers.TextLexer import QsciLexerText
-from lexers.lexerpygments import LexerPygments
 
 LEXERS = {
         'Bash': QsciLexerBash(),
@@ -21,7 +20,6 @@ LEXERS = {
         'Diff': QsciLexerDiff(),
         'Fortran': QsciLexerFortran(),
         'Fortran77': QsciLexerFortran77(),
-        'Guessed': LexerPygments(),
         'HTML': QsciLexerHTML(),
         'IDL': QsciLexerIDL(),
         'Java': QsciLexerJava(),
@@ -53,5 +51,5 @@ filename = ""
 font = QtGui.QFont("Ubuntu Mono", 12, 50)
 lexer = QsciLexerText()
 dark = False
-from writerqsci import mainWindow
+from window import mainWindow
 m = mainWindow()

@@ -306,6 +306,9 @@ def getLexer(language, parent=None, pyname=""):
             elif language == "Plain Text":
                 from lexers.TextLexer import QsciLexerText
                 return QsciLexerText(parent)
+            elif language == "Guessed":
+                from lexers.lexerpygments import LexerPygments
+                return LexerPygments(parent)
 
             elif language in LexerRegistry:
                 return LexerRegistry[language][2](parent)

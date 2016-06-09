@@ -15,7 +15,6 @@ from ext.find import Find
 from ext.fileTree import Tree
 
 from lexers.TextLexer import QsciLexerText
-from lexers.lexerpygments import LexerPygments
 from Editor import Editor
 
 class mainWindow(QtGui.QMainWindow):
@@ -184,11 +183,11 @@ class mainWindow(QtGui.QMainWindow):
         # Without os.path it will look for icons in bin/
         self.setWindowIcon(QtGui.QIcon(os.path.join(
                                 os.path.dirname(os.path.dirname(__file__)))+ \
-                                "/icons/codex.svg"))
+                                "/icons/256x256/codex.png"))
         # Change the filename if there are unsaved changes
         self.edit.textChanged.connect(self.unsaved)
 
-    # Populates languages menu and binds entries to lexers
+
     def initLexers(self):
         # Dict that maps lexer actions to their respective strings
         self.lexActs = {}
