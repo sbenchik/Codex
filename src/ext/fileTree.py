@@ -1,7 +1,3 @@
-"""
-File tree widget for Codex
-"""
-
 import os
 import src.config
 from PyQt4 import QtGui, QtCore
@@ -9,6 +5,7 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
 class Tree(QWidget):
+    """ File tree widget for Codex"""
     def __init__(self, parent = None):
         super(Tree, self).__init__(parent)
         self.initUI()

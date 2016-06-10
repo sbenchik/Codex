@@ -16,6 +16,7 @@ from ext.fileTree import Tree
 
 from lexers.TextLexer import QsciLexerText
 from Editor import Editor
+from theme import themeParser
 
 class mainWindow(QtGui.QMainWindow):
 
@@ -23,6 +24,7 @@ class mainWindow(QtGui.QMainWindow):
         super(mainWindow, self).__init__(parent)
         config.filename = "Untitled"
         self.tabNum = 1
+        theme = themeParser()
 
         self.initUI()
 
@@ -290,10 +292,8 @@ class mainWindow(QtGui.QMainWindow):
     def toggleLN(self):
         state = self.edit.marginLineNumbers(0)
         self.edit.setMarginLineNumbers(0, not state)
-        if state == True:
-            self.edit.setMarginWidth(0,0)
-        elif state == False:
-            self.edit.setMarginWidth(0,self.edit.metrics.width("00000"))
+        self.edit.setMarginWidth(0,0) if state == True else self.edit. \
+                                setMarginWidth(0,self.edit.metrics.width("00000"))
 
     def fr(self):
         frwin = Find(self)
