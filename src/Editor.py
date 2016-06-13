@@ -1,14 +1,10 @@
-"""
-Implementation of the editor component for Codex
-"""
-
 import sys, config, lexers
-from PyQt4 import QtCore, QtGui, Qsci
 from PyQt4.QtGui import *
 from PyQt4.Qsci import *
 from lexers.TextLexer import QsciLexerText
 
 class Editor(QsciScintilla):
+    """Implementation of the editor component for Codex"""
     def __init__(self, parent = None):
         super(Editor, self).__init__(parent)
         self.initUI()

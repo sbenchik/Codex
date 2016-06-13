@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Oblivion>
+    <Attributes type="background" color="#2e3436"/>
+    <Attributes type="foreground" color="#ffffff"/>
+    <Attributes type="highlight_background" color="#888a85"/>
+    <Attributes type="highlight_foreground" color="#eeeeec"/>
+    <Attributes type="line_numbers_background" color="#000000"/>
+    <Attributes type="line_numbers_foreground" color="#26262c"/>
+    <Attributes type="current_line_background" color="#555753"/>
+    <Attributes type="current_line_background" color="#555753"/>
+    <Attributes type="others" color="#ce5712"/>
+    <Attributes type="numbers" color="#edd400"/>
+    <Attributes type="strings" color="#edd400"/>
+    <Attributes type="keywords" color="#ad7fa8"/>
+    <Attributes type="comments" color="#888a85"/>
+    <Attributes type="functions" color="#6d9fcf"/>
+</Oblivion>

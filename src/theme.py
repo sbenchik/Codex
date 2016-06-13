@@ -1,16 +1,15 @@
-from PyQt4.QtCore import QXmlStreamReader, QFile, QColor, QIODevice
+from PyQt4.QtCore import QObject, QXmlStreamReader, QFile, QIODevice
+from PyQt4.QtGui import QColor
 
 class themeParser(QObject):
-    """Parses XML theme files for use in editor class"""
-    def __init__(self, arg):
+    """Parses XML theme files for use in editor class.
+    This code comes from Alex Spataru's Thunderpad and was
+    adapted for Codex. """
+    def __init__(self, parent=None):
         super(themeParser, self).__init__()
-        file = QFile("/themes/"+theme+".xml")
-        file.open(QIODevice.ReadOnly)
 
-        self.types = QStringList()
-        self.values = QStringList()
-
-        self.reader = QXmlStreamReader(file)
+        self.types = {}
+        self.colors = {}
 
     def defaultTheme(self):
         self.back = "#ffffff"
@@ -22,39 +21,44 @@ class themeParser(QObject):
         self.cback = "#e6e6e6"
 
     def readTheme(self, theme):
+        file = QFile("/themes/"+theme+".xml")
+        file.open(QIODevice.ReadOnly)
+
+        self.reader = QXmlStreamReader(file)
+
         if not self.file.open(QFile.ReadOnly):
             defaultTheme()
 
         while not self.reader.isAtEnd():
-            if self.reader.readNext() == QXmlStreamReader.startElement():
+            if self.reader.readNext() == QXmlStreamReader.StartElement():
                 if self.reader.name() == "type":
                     types.append(self.reader.readElementText())
                 if self.reader.name() == "color":
-                    values.append(self.reader.readElementText())
+                    colors.append(self.reader.readElementText())
 
         self.reader.clear()
         file.close()
 
-        if types.count() != values.count():
+        if types.count() != colors.count():
             defaultTheme()
         else:
             initTheme()
 
     def initTheme(self):
-        self.back = values.at(types.indexOf("background"))
-        self.fore = values.at(types.indexOf("foreground"))
-        self.hback = values.at(types.indexOf("highlight_background"))
-        self.hfore = values.at(types.indexOf("highlight_foreground"))
-        self.lnback = values.at(types.indexOf("line_numbers_background"))
-        self.lnfore = values.at(types.indexOf("line_numbers_foreground"))
-        self.cback = values.at(types.indexOf("current_line_background"))
+        self.back = colors.at(types.indexOf("background"))
+        self.fore = colors.at(types.indexOf("foreground"))
+        self.hback = colors.at(types.indexOf("highlight_background"))
+        self.hfore = colors.at(types.indexOf("highlight_foreground"))
+        self.lnback = colors.at(types.indexOf("line_numbers_background"))
+        self.lnfore = colors.at(types.indexOf("line_numbers_foreground"))
+        self.cback = colors.at(types.indexOf("current_line_background"))
 
-        self.others = values.at(types.indexOf("others"))
-        self.numbers = values.at(types.indexOf("numbers"))
-        self.strings = values.at(types.indexOf("strings"))
-        self.keywords = values.at(types.indexOf("keywords"))
-        self.comments = values.at(types.indexOf("comments"))
-        self.functions = values.at(types.indexOf("functions"))
+        self.others = colors.at(types.indexOf("others"))
+        self.numbers = colors.at(types.indexOf("numbers"))
+        self.strings = colors.at(types.indexOf("strings"))
+        self.keywords = colors.at(types.indexOf("keywords"))
+        self.comments = colors.at(types.indexOf("comments"))
+        self.functions = colors.at(types.indexOf("functions"))
 
     # These return all of the components of the theme as QColors
 

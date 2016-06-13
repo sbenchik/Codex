@@ -2,11 +2,11 @@
 File that contains global variables
 """
 
-from PyQt4 import QtCore, QtGui, Qsci
 from PyQt4.Qsci import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from lexers.TextLexer import QsciLexerText
+from theme import themeParser
 
 LEXERS = {
         'Bash': QsciLexerBash(),
@@ -47,8 +47,14 @@ LEXERS = {
         'YAML': QsciLexerYAML(),
     }
 
+THEMES = {
+    "Default",
+    "Oblivion"
+}
+
 filename = ""
-font = QtGui.QFont("Ubuntu Mono", 12, 50)
+theme = themeParser()
+font = QFont("Ubuntu Mono", 12, 50)
 lexer = QsciLexerText()
 dark = False
 from window import mainWindow

@@ -24,7 +24,6 @@ class mainWindow(QtGui.QMainWindow):
         super(mainWindow, self).__init__(parent)
         config.filename = "Untitled"
         self.tabNum = 1
-        theme = themeParser()
 
         self.initUI()
 
@@ -106,9 +105,6 @@ class mainWindow(QtGui.QMainWindow):
         self.fontAct = QtGui.QAction("Choose Font",self)
         self.fontAct.triggered.connect(self.chooseFont)
 
-        self.darkAct = QtGui.QAction("Dark Mode",self)
-        self.darkAct.triggered.connect(self.darkMode)
-
     def initMenubar(self):
         menubar = self.menuBar()
 
@@ -142,7 +138,7 @@ class mainWindow(QtGui.QMainWindow):
         view.addAction(self.toggleLNAct)
         view.addAction(self.treeAct)
         view.addAction(self.hideTreeAct)
-        view.addAction(self.darkAct)
+        self.colors = view.addMenu("Color Scheme")
 
         about.addAction(self.aboutAction)
 
@@ -309,9 +305,12 @@ class mainWindow(QtGui.QMainWindow):
         self.ftree.close()
 
     def chooseFont(self):
-       config.font, ok = QtGui.QFontDialog.getFont()
-       if ok:
-            self.edit.setFont(config.font)
+        font, ok = QtGui.QFontDialog.getFont()
+        if ok:
+            config.font = font
+            config.lexer.setFont(config.font, -1)
+        else:
+            pass
 
     # This method adapted from Peter Goldsborough's Writer
     def closeEvent(self,event):
@@ -333,11 +332,5 @@ class mainWindow(QtGui.QMainWindow):
                 event.accept()
             else: event.ignore()
 
-    def darkMode(self):
-        config.dark = True
-        config.lexer.setPaper(QColor("#232323"))
-        self.edit.setMarginsBackgroundColor(QColor("#232323"))
-        self.edit.setFoldMarginColors(QColor("#232323"),QColor("#232323"))
-        self.edit.setMarginsForegroundColor(QColor("White"))
-        self.edit.setCaretLineBackgroundColor(QColor("#525252"))
-        config.lexer.setColor(QColor("White"), 0)
+    def changeColor(self):
+        pass

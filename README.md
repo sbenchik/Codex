@@ -32,5 +32,5 @@ From there run
 from the directory you downloaded Codex into. A more official way of installing Codex with a Makefile and whatnot is coming soon.
 
 # Acknowledgments
-Codex is inspired by/based off of a variety of projects, including [Writer by Peter Goldsborough](https://github.com/goldsborough/Writer), [Enki by Andrei Kopats](http://enki-editor.org), and [SciTE by Neil Hodgson](http://www.scintilla.org/SciTE.html).
+Codex is inspired by/based off of a variety of projects, including [Writer by Peter Goldsborough](https://github.com/goldsborough/Writer), [Enki by Andrei Kopats](http://enki-editor.org), [Thunderpad by Alex Spataru](https://github.com/alex-spataru/Thunderpad), and [SciTE by Neil Hodgson](http://www.scintilla.org/SciTE.html).
 
