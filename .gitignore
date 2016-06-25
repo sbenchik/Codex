@@ -9,3 +9,7 @@ hw.py
 save.p
 
 *.sublime-project
+
+src/themes/
+
+src/theme.py

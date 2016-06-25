@@ -1,5 +1,6 @@
-import os
-import src.config
+import sys, os
+os.sys.path.insert(0,os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import config
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
@@ -14,7 +15,7 @@ class Tree(QWidget):
         self.fsModel = QtGui.QFileSystemModel()
         # Starting 1 directory higher seems like a good place
         # TODO: Allow user to set a working directory to use for root
-        self.fsIndex = self.fsModel.setRootPath(QString(os.path.dirname(os.path.dirname(str(src.config.filename)))))
+        self.fsIndex = self.fsModel.setRootPath(QString(os.path.dirname(os.path.dirname(str(config.filename)))))
         self.treeView = QtGui.QTreeView(self)
         self.treeView.setModel(self.fsModel)
         self.treeView.setDragEnabled(True)
@@ -30,5 +31,5 @@ class Tree(QWidget):
 
     def clicked(self):
         self.file = self.fsModel.fileName(self.fsIndex)
-        src.config.filename = str(self.file)
-        src.config.m.open()
+        config.filename = str(self.file)
+        config.m.open()

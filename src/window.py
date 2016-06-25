@@ -2,7 +2,7 @@
 Class for the main window that contains tabs, editor, terminal, etc.
 """
 
-import sys, os, atexit, functools
+import sys, os
 import config
 
 from PyQt4 import QtGui, QtCore
@@ -24,6 +24,8 @@ class mainWindow(QtGui.QMainWindow):
         super(mainWindow, self).__init__(parent)
         config.filename = "Untitled"
         self.tabNum = 1
+        self.treeVis = False
+        self.termVis = False
 
         self.initUI()
 
@@ -74,13 +76,13 @@ class mainWindow(QtGui.QMainWindow):
         self.noLexAct = QtGui.QAction("Plain Text",self)
         self.noLexAct.triggered.connect(lambda noLex: self.edit.setLexer(QsciLexerText()))
 
-        self.showTermAct = QtGui.QAction("Show Terminal",self)
-        self.showTermAct.setShortcut("Ctrl+Shift+T")
-        self.showTermAct.triggered.connect(self.showTerm)
+        self.termAct = QtGui.QAction("Terminal",self)
+        self.termAct.setCheckable(True)
+        self.termAct.triggered.connect(self.toggleTerm)
 
-        self.hideTermAct = QtGui.QAction("Hide Terminal",self)
-        self.hideTermAct.setShortcut("Ctrl+Shift+H")
-        self.hideTermAct.triggered.connect(self.hideTerm)
+        self.treeAct = QtGui.QAction("File Tree",self)
+        self.treeAct.setCheckable(True)
+        self.treeAct.triggered.connect(self.toggleTree)
 
         self.toggleIntAct = QtGui.QAction("Indentation Guides",self)
         self.toggleIntAct.triggered.connect(self.toggleIntGuide)
@@ -95,12 +97,6 @@ class mainWindow(QtGui.QMainWindow):
         self.FRAct = QtGui.QAction("Find and Replace",self)
         self.FRAct.triggered.connect(self.fr)
         self.FRAct.setShortcut("Ctrl+F")
-
-        self.treeAct = QtGui.QAction("Show File Tree",self)
-        self.treeAct.triggered.connect(self.showTree)
-
-        self.hideTreeAct = QtGui.QAction("Hide File Tree",self)
-        self.hideTreeAct.triggered.connect(self.hideTree)
 
         self.fontAct = QtGui.QAction("Choose Font",self)
         self.fontAct.triggered.connect(self.chooseFont)
@@ -132,13 +128,10 @@ class mainWindow(QtGui.QMainWindow):
         edit.addAction(self.pasteAction)
         edit.addAction(self.FRAct)
 
-        view.addAction(self.showTermAct)
-        view.addAction(self.hideTermAct)
+        view.addAction(self.termAct)
         view.addAction(self.toggleIntAct)
         view.addAction(self.toggleLNAct)
         view.addAction(self.treeAct)
-        view.addAction(self.hideTreeAct)
-        self.colors = view.addMenu("Color Scheme")
 
         about.addAction(self.aboutAction)
 
@@ -172,7 +165,7 @@ class mainWindow(QtGui.QMainWindow):
         self.initActions()
         self.initMenubar()
         self.initTabs()
-        # Create terminal widget
+        # Create terminal and widget
         self.term = XTerm(self)
         # x and y coordinates on the screen, width, height
         self.setGeometry(100,100,600,430)
@@ -180,8 +173,8 @@ class mainWindow(QtGui.QMainWindow):
         # Move up to the parent directory and set the window icons.
         # Without os.path it will look for icons in bin/
         self.setWindowIcon(QtGui.QIcon(os.path.join(
-                                os.path.dirname(os.path.dirname(__file__)))+ \
-                                "/icons/256x256/codex.png"))
+        os.path.dirname(os.path.dirname(__file__)))+ \
+        "/icons/256x256/codex.png"))
         # Change the filename if there are unsaved changes
         self.edit.textChanged.connect(self.unsaved)
 
@@ -275,11 +268,30 @@ class mainWindow(QtGui.QMainWindow):
         self.tab.setTabsClosable(True)
 
     def showTerm(self):
+        self.termVis = True
         self.termSplit.addWidget(self.term)
         self.term.show_term()
 
     def hideTerm(self):
+        self.termVis = False
         self.term.hide()
+
+    def toggleTerm(self):
+        self.hideTerm() if self.termVis else self.showTerm()
+
+    def showTree(self):
+        self.ftree = Tree(self)
+        self.treeVis = True
+        self.ftree.resize(80,430)
+        self.treeSplit.addWidget(self.ftree)
+        self.ftree.show()
+
+    def hideTree(self):
+        self.treeVis = False
+        self.ftree.close()
+
+    def toggleTree(self):
+        self.hideTree() if self.treeVis else self.showTree()
 
     def toggleIntGuide(self):
         state = self.edit.indentationGuides()
@@ -294,15 +306,6 @@ class mainWindow(QtGui.QMainWindow):
     def fr(self):
         frwin = Find(self)
         frwin.show()
-
-    def showTree(self):
-        self.ftree = Tree(self)
-        self.ftree.resize(80,430)
-        self.treeSplit.addWidget(self.ftree)
-        self.ftree.show()
-
-    def hideTree(self):
-        self.ftree.close()
 
     def chooseFont(self):
         font, ok = QtGui.QFontDialog.getFont()
@@ -331,6 +334,3 @@ class mainWindow(QtGui.QMainWindow):
             elif response == QtGui.QMessageBox.Discard:
                 event.accept()
             else: event.ignore()
-
-    def changeColor(self):
-        pass
