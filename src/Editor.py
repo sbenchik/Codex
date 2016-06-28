@@ -19,11 +19,6 @@ class Editor(QsciScintilla):
         # Comments use a serifed font by default so
         # they have to be set to use the same font
         self.lexer.setFont(config.font, 1)
-        if config.dark:
-            # Setting a new lexer resets some dark mode settings, so method has to
-            # be run again
-            config.m.darkMode()
-            config.lexer.setColor(QColor("White"))
 
     def getLexer(self, lex):
         self.lexer = config.LEXERS.get(lex)

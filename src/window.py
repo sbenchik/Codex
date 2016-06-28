@@ -2,8 +2,7 @@
 Class for the main window that contains tabs, editor, terminal, etc.
 """
 
-import sys, os
-import config
+import sys, os, cPickle, gzip, subprocess, config
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
@@ -16,7 +15,6 @@ from ext.fileTree import Tree
 
 from lexers.TextLexer import QsciLexerText
 from Editor import Editor
-from theme import themeParser
 
 class mainWindow(QtGui.QMainWindow):
 
@@ -26,6 +24,7 @@ class mainWindow(QtGui.QMainWindow):
         self.tabNum = 1
         self.treeVis = False
         self.termVis = False
+        self.docList = []
 
         self.initUI()
 
@@ -177,7 +176,8 @@ class mainWindow(QtGui.QMainWindow):
         "/icons/256x256/codex.png"))
         # Change the filename if there are unsaved changes
         self.edit.textChanged.connect(self.unsaved)
-
+        # Open any documents that were open before closing
+        self.loadDocs()
 
     def initLexers(self):
         # Dict that maps lexer actions to their respective strings
@@ -206,25 +206,50 @@ class mainWindow(QtGui.QMainWindow):
         return QString(os.path.basename(str(fn)))
 
     def open(self):
-        try:
-            with open(self.file,"rt") as f:
-                self.edit.setText(f.read())
-                # Set the tab title to filename
-                self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(self.file))
-                self.edit.setModified(False)
-        except AttributeError:
-            config.filename = self.file
-            with open(self.file,"rt") as f:
-                self.edit.setText(f.read())
-                # Set the tab title to filename
-                self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(self.file))
-                self.edit.setModified(False)
+        with open(self.file,"rt") as f:
+            self.edit.setText(f.read())
+            # Set the tab title to filename
+            self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(self.file))
+            # Add the filename to docList
+            self.docList.append(str(self.file))
+            self.edit.setModified(False)
 
+    # This is its own method because passing getOpenFileName as an argument to
+    # openFile would cause all sorts of errors, like having the open dialog
+    # appear on startup
     def openFile(self):
-        # Get file names and only show text files
         self.file = QtGui.QFileDialog.getOpenFileName(self, 'Open File',".")
         config.filename = str(self.file)
-        self.open()
+        try:
+            self.open()
+        except AttributeError:
+            config.filename = self.file
+            self.open()
+
+    def loadDocs(self):
+        fh = None
+        if "No such file or directory" in \
+        str(subprocess.Popen("find .open.p",shell=True).wait()):
+            return
+        else:
+            try:
+                fh = gzip.open(unicode(".open.p"), "rb")
+                self.docList = cPickle.load(fh)
+                for x in self.docList:
+                    self.file = x
+                    config.filename = str(self.file)
+                    try:
+                        self.open()
+                        break
+                    except AttributeError:
+                        config.filename = self.file
+                        self.open()
+            except (IOError, OSError), e:
+                print e+": Error Loading File"
+                return
+            finally:
+                if fh is not None:
+                    fh.close()
 
     def save(self):
         # Save the file as plain text
@@ -234,6 +259,17 @@ class mainWindow(QtGui.QMainWindow):
         self.edit.setModified(False)
         # Set the tab title to filename
         self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(config.filename))
+
+    def saveDocs(self):
+        try:
+            fh = gzip.open(unicode(".open.p"), "wb")
+            cPickle.dump(self.docList, fh, 2)
+            print "a"
+        except (IOError, OSError), e:
+            raise e
+        finally:
+            if fh:
+                fh.close()
 
     def saveFile(self):
         # Only open if it hasn't previously been saved
@@ -309,11 +345,11 @@ class mainWindow(QtGui.QMainWindow):
         if ok:
             config.font = font
             config.lexer.setFont(config.font, -1)
-        else:
-            pass
 
-    # This method adapted from Peter Goldsborough's Writer
+    # This method adapted from Peter Goldsborough's Writer.
+    # Alerts the user if they are saving an edited file.
     def closeEvent(self,event):
+        self.saveDocs()
         if not self.edit.isModified():
             event.accept()
         else:

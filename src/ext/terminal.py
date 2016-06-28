@@ -43,7 +43,7 @@ class XTerm(QX11EmbedContainer):
         self.close()
 
     def checkForTerm(self):
-        if "xterm" not in str(subprocess.Popen("which xterm",shell=True).wait()):
+        if "xterm" not in str(subprocess.call("which xterm",shell=True)):
             dialog = QtGui.QMessageBox(self)
             dialog.setIcon(QtGui.QMessageBox.Warning)
             dialog.setText("XTerm not installed")
