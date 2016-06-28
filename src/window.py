@@ -44,11 +44,11 @@ class mainWindow(QtGui.QMainWindow):
 
         self.saveAction = QtGui.QAction("Save",self)
         self.saveAction.setShortcut("Ctrl+S")
-        self.saveAction.triggered.connect(self.save)
+        self.saveAction.triggered.connect(self.saveFile)
 
         self.saveasAction = QtGui.QAction("Save As",self)
         self.saveasAction.setShortcut("Ctrl+Shift+S")
-        self.saveasAction.triggered.connect(self.saveAs)
+        self.saveasAction.triggered.connect(self.saveFileAs)
 
         self.cutAction = QtGui.QAction("Cut",self)
         self.cutAction.setShortcut("Ctrl+X")
@@ -227,9 +227,6 @@ class mainWindow(QtGui.QMainWindow):
         self.open()
 
     def save(self):
-        # Only open if it hasn't previously been saved
-        if config.filename == "Untitled":
-            config.filename = QtGui.QFileDialog.getSaveFileName(self, 'Save File')
         # Save the file as plain text
         with open(config.filename, "wt") as file:
             file.write(self.edit.text())
@@ -238,18 +235,18 @@ class mainWindow(QtGui.QMainWindow):
         # Set the tab title to filename
         self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(config.filename))
 
-    def saveAs(self):
+    def saveFile(self):
+        # Only open if it hasn't previously been saved
+        if config.filename == "Untitled":
+            config.filename = QtGui.QFileDialog.getSaveFileName(self, 'Save File')
+        self.save()
+
+    def saveFileAs(self):
         config.filename = QtGui.QFileDialog.getSaveFileName(self, 'Save File')
-         # Save the file as plain text
-        with open(config.filename, "wt") as file:
-            file.write(self.edit.text())
-        # Note that changes to the document are saved
-        self.edit.setModified(False)
-        # Set the tab title to filename
-        self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(config.filename))
+        self.save()
 
     def unsaved(self):
-        self.saved = False
+        self.edit.setModified(True)
         self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(config.filename+"*"))
 
     def about(self):
