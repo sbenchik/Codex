@@ -21,7 +21,7 @@ class mainWindow(QtGui.QMainWindow):
     def __init__(self, parent = None):
         super(mainWindow, self).__init__(parent)
         config.filename = "Untitled"
-        self.tabNum = 1
+        self.tabNum = 0
         self.treeVis = False
         self.termVis = False
         self.docList = []
@@ -136,7 +136,9 @@ class mainWindow(QtGui.QMainWindow):
 
     def lessTabs(self):
         self.tabNum = self.tabNum - 1
-        if self.tabNum == 1:
+        self.docList.remove(config.filename)
+        print self.docList
+        if self.tabNum <= 1:
             self.tab.setTabsClosable(False)
 
     def initTabs(self):
@@ -206,17 +208,36 @@ class mainWindow(QtGui.QMainWindow):
         return QString(os.path.basename(str(fn)))
 
     def open(self):
+        index = self.tab.currentIndex()
         with open(self.file,"rt") as f:
-            self.edit.setText(f.read())
+            if self.tabNum >= 1:
+                self.__newEditor()
+                self.tabNum+=1
+                self.tab.setTabsClosable(True)
+            if self.tabNum == 0:
+                self.tabNum = 1
             # Set the tab title to filename
-            self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(self.file))
-            # Add the filename to docList
-            self.docList.append(str(self.file))
+            self.tab.setCurrentIndex(index + 1)
+            self.tab.setTabText(index, self.FNToQString(self.file))
+            if self.tabNum == 1:
+                self.edit.setText(f.read())
+            else:
+                self.editList[self.tabNum - 1].setText(f.read())
             self.edit.setModified(False)
 
-    # This is its own method because passing getOpenFileName as an argument to
-    # openFile would cause all sorts of errors, like having the open dialog
-    # appear on startup
+    # Main issue with this is that there is only ever one item in editList
+    def __newEditor(self):
+        # A list of strings to be turned into editor objects
+        self.editList = []
+        # Add a new string to the list to represent a new editor object
+        self.editList.append("edit"+str(self.tabNum))
+        print self.editList
+        print self.tabNum
+        self.editList[self.tabNum - 1] = Editor()
+        self.editList.append("edit"+str(self.tabNum))
+        print self.editList[self.tabNum - 1]
+        self.tab.addTab(self.editList[self.tabNum - 1], self.file)
+
     def openFile(self):
         self.file = QtGui.QFileDialog.getOpenFileName(self, 'Open File',".")
         config.filename = str(self.file)
@@ -225,6 +246,9 @@ class mainWindow(QtGui.QMainWindow):
         except AttributeError:
             config.filename = self.file
             self.open()
+            # Add the filename to docList
+            self.docList.append(str(self.file))
+            print self.docList
 
     def loadDocs(self):
         fh = None
@@ -235,17 +259,13 @@ class mainWindow(QtGui.QMainWindow):
             try:
                 fh = gzip.open(unicode(".open.p"), "rb")
                 self.docList = cPickle.load(fh)
+                print self.docList
                 for x in self.docList:
                     self.file = x
-                    config.filename = str(self.file)
-                    try:
-                        self.open()
-                        break
-                    except AttributeError:
-                        config.filename = self.file
-                        self.open()
+                    config.filename = self.file
+                    self.open()
             except (IOError, OSError), e:
-                print e+": Error Loading File"
+                print e
                 return
             finally:
                 if fh is not None:
@@ -264,7 +284,6 @@ class mainWindow(QtGui.QMainWindow):
         try:
             fh = gzip.open(unicode(".open.p"), "wb")
             cPickle.dump(self.docList, fh, 2)
-            print "a"
         except (IOError, OSError), e:
             raise e
         finally:
@@ -282,8 +301,8 @@ class mainWindow(QtGui.QMainWindow):
         self.save()
 
     def unsaved(self):
-        self.edit.setModified(True)
-        self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(config.filename+"*"))
+        if self.edit.isModified() == True:
+            self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(config.filename+"*"))
 
     def about(self):
         QtGui.QMessageBox.about(self, "About Codex",
