@@ -212,7 +212,6 @@ class mainWindow(QtGui.QMainWindow):
         with open(self.file,"rt") as f:
             if self.tabNum >= 1:
                 self.__newEditor()
-                self.tabNum+=1
                 self.tab.setTabsClosable(True)
             if self.tabNum == 0:
                 self.tabNum = 1
@@ -222,21 +221,20 @@ class mainWindow(QtGui.QMainWindow):
             if self.tabNum == 1:
                 self.edit.setText(f.read())
             else:
-                self.editList[self.tabNum - 1].setText(f.read())
+                self.editDict.get(("edit"+str(self.tabNum))).setText(f.read())
             self.edit.setModified(False)
+        # TODO: make the tabs display the right filename
 
-    # Main issue with this is that there is only ever one item in editList
     def __newEditor(self):
         # A list of strings to be turned into editor objects
-        self.editList = []
-        # Add a new string to the list to represent a new editor object
-        self.editList.append("edit"+str(self.tabNum))
-        print self.editList
+        self.editDict = {"edit1":self.edit}
+        self.tabNum+=1
+        # Add a new entry to the dict and map it an editor object
+        self.editDict["edit"+str(self.tabNum)] = Editor()
+        print self.editDict
         print self.tabNum
-        self.editList[self.tabNum - 1] = Editor()
-        self.editList.append("edit"+str(self.tabNum))
-        print self.editList[self.tabNum - 1]
-        self.tab.addTab(self.editList[self.tabNum - 1], self.file)
+        self.tab.addTab(self.editDict.get(("edit"+str(self.tabNum))),
+                                          self.FNToQString(self.file))
 
     def openFile(self):
         self.file = QtGui.QFileDialog.getOpenFileName(self, 'Open File',".")
