@@ -47,7 +47,7 @@ LEXERS = {
     }
 
 
-filename = ""
+docList = []
 font = QFont("Ubuntu Mono", 12, 50)
 lexer = QsciLexerText()
 from window import mainWindow

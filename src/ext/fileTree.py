@@ -15,7 +15,9 @@ class Tree(QWidget):
         self.fsModel = QtGui.QFileSystemModel()
         # Starting 1 directory higher seems like a good place
         # TODO: Allow user to set a working directory to use for root
-        self.fsIndex = self.fsModel.setRootPath(QString(os.path.dirname(os.path.dirname(str(config.filename)))))
+        self.fsIndex = self.fsModel.setRootPath(QString( \
+                                        os.path.dirname(os.path.dirname( \
+                                                        config.docList[config.m.tab.currentIndex()]))))
         self.treeView = QtGui.QTreeView(self)
         self.treeView.setModel(self.fsModel)
         self.treeView.setDragEnabled(True)

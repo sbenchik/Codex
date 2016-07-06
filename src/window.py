@@ -24,7 +24,7 @@ class mainWindow(QtGui.QMainWindow):
         self.tabNum = 0
         self.treeVis = False
         self.termVis = False
-        self.docList = []
+        config.docList = []
         self.edit = Editor()
         self.editDict = {"edit1":self.edit}
         self.tab = QtGui.QTabWidget(self)
@@ -139,8 +139,8 @@ class mainWindow(QtGui.QMainWindow):
 
     def lessTabs(self):
         self.tabNum = self.tabNum - 1
-        self.docList.remove(self.docList[self.tab.currentIndex()+1])
-        print self.docList
+        config.docList.remove(config.docList[self.tab.currentIndex()+1])
+        print config.docList
         if self.tabNum <= 1:
             self.tab.setTabsClosable(False)
 
@@ -238,13 +238,13 @@ class mainWindow(QtGui.QMainWindow):
         self.file = QtGui.QFileDialog.getOpenFileName(self, 'Open File',".")
         print self.file
         try:
-            self.docList.apppend(str(self.file))
+            config.docList.apppend(str(self.file))
             self.open()
         except AttributeError:
             self.open()
             # Add the filename to docList
-            self.docList.append(str(self.file))
-            print self.docList
+            config.docList.append(str(self.file))
+            print config.docList
 
     def loadDocs(self):
         fh = None
@@ -254,9 +254,9 @@ class mainWindow(QtGui.QMainWindow):
         else:
             try:
                 fh = gzip.open(unicode(".open.p"), "rb")
-                self.docList = cPickle.load(fh)
-                print self.docList
-                for x in self.docList:
+                config.docList = cPickle.load(fh)
+                print config.docList
+                for x in config.docList:
                     self.file = x
                     self.open()
             except (IOError, OSError), e:
@@ -268,18 +268,18 @@ class mainWindow(QtGui.QMainWindow):
 
     def save(self):
         # Save the file as plain text
-        with open(self.docList[self.tab.currentIndex()], "wt") as file:
+        with open(config.docList[self.tab.currentIndex()], "wt") as file:
             file.write(self.editDict.get("edit"+str(self.tab.currentIndex()+1)).text())
         # Note that changes to the document are saved
         self.edit.setModified(False)
         # Set the tab title to filename
         self.tab.setTabText(self.tab.currentIndex(),
-                            self.FNToQString(self.docList[self.tab.currentIndex()]))
+                            self.FNToQString(config.docList[self.tab.currentIndex()]))
 
     def saveDocs(self):
         try:
             fh = gzip.open(unicode(".open.p"), "wb")
-            cPickle.dump(self.docList, fh, 2)
+            cPickle.dump(config.docList, fh, 2)
         except (IOError, OSError), e:
             raise e
         finally:
@@ -288,8 +288,8 @@ class mainWindow(QtGui.QMainWindow):
 
     def saveFile(self):
         # Only open if it hasn't previously been saved
-        if self.docList[self.tab.currentIndex()] == "Untitled":
-            self.docList[self.tab.currentIndex()] = \
+        if config.docList[self.tab.currentIndex()] == "Untitled":
+            config.docList[self.tab.currentIndex()] = \
             QtGui.QFileDialog.getSaveFileName(self, 'Save File')
         self.save()
 
@@ -300,7 +300,7 @@ class mainWindow(QtGui.QMainWindow):
     def unsaved(self):
         if self.editDict.get("edit"+str(self.tab.currentIndex()+1)).isModified:
             self.tab.setTabText(self.tab.currentIndex(),
-                                self.FNToQString(self.docList[self.tab.currentIndex()]+"*"))
+                                self.FNToQString(config.docList[self.tab.currentIndex()]+"*"))
 
     def about(self):
         QtGui.QMessageBox.about(self, "About Codex",

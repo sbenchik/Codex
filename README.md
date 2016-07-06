@@ -1,6 +1,6 @@
 # Codex
 
-* If you want a stable product, use the releases. Master is almost always broken. *
+**If you want a stable product, use the releases. Master is almost always broken.**
 
 Codex is a text editor for programmers built with PyQt4 and QScintilla.
 Latest screenshot with i3 on Linux:
