@@ -198,7 +198,8 @@ class mainWindow(QtGui.QMainWindow):
             langAct.setActionGroup(langGrp)
             self.lexActs[langAct] = i
         langGrp.triggered.connect(  \
-            lambda lex: self.editDict.get("edit"+str(self.tab.currentIndex()+1)).setLang(self.lexActs.get(lex)))
+            lambda lex: self.editDict.get("edit"+str(self.tab.currentIndex()+1)) \
+            .setLang(self.lexActs.get(lex)))
 
     def new(self):
         main = mainWindow()
@@ -217,7 +218,7 @@ class mainWindow(QtGui.QMainWindow):
                 self.tabNum = 1
             # Set the tab title to filename
             self.tab.setCurrentIndex(index + 1)
-            self.tab.setTabText(index, self.FNToQString(self.file))
+            self.tab.setTabText(index+1, self.FNToQString(self.file))
             if self.tabNum == 1:
                 self.edit.setText(f.read())
             else:
