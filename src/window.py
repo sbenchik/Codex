@@ -198,7 +198,7 @@ class mainWindow(QtGui.QMainWindow):
             langAct.setActionGroup(langGrp)
             self.lexActs[langAct] = i
         langGrp.triggered.connect(  \
-            lambda lex: self.edit.setLang(self.lexActs.get(lex)))
+            lambda lex: self.editDict.get("edit"+str(self.tab.currentIndex()+1)).setLang(self.lexActs.get(lex)))
 
     def new(self):
         main = mainWindow()
