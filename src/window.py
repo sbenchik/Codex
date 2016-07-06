@@ -25,6 +25,9 @@ class mainWindow(QtGui.QMainWindow):
         self.treeVis = False
         self.termVis = False
         self.docList = []
+        self.edit = Editor()
+        self.editDict = {"edit1":self.edit}
+        self.tab = QtGui.QTabWidget(self)
 
         self.initUI()
 
@@ -136,21 +139,20 @@ class mainWindow(QtGui.QMainWindow):
 
     def lessTabs(self):
         self.tabNum = self.tabNum - 1
-        self.docList.remove(config.filename)
+        self.docList.remove(self.docList[self.tab.currentIndex()+1])
         print self.docList
         if self.tabNum <= 1:
             self.tab.setTabsClosable(False)
 
     def initTabs(self):
         # Set up the tabs
-        self.tab = QtGui.QTabWidget(self)
         self.tab.tabCloseRequested.connect(self.tab.removeTab)
         self.tab.tabCloseRequested.connect(self.lessTabs)
         self.tab.setMovable(True)
         # Automatically make new tabs contain an editor widget
-        self.edit = Editor()
-        self.tab.addTab(self.edit, config.filename)
+        self.tab.addTab(self.editDict.get("edit1"), config.filename)
         self.termSplit.addWidget(self.tab)
+
 
     def initUI(self):
         # Create first qsplitter for sidebar
@@ -176,8 +178,6 @@ class mainWindow(QtGui.QMainWindow):
         self.setWindowIcon(QtGui.QIcon(os.path.join(
         os.path.dirname(os.path.dirname(__file__)))+ \
         "/icons/256x256/codex.png"))
-        # Change the filename if there are unsaved changes
-        self.edit.textChanged.connect(self.unsaved)
         # Open any documents that were open before closing
         self.loadDocs()
 
@@ -214,21 +214,18 @@ class mainWindow(QtGui.QMainWindow):
             if self.tabNum >= 1:
                 self.__newEditor()
                 self.tab.setTabsClosable(True)
+                self.tab.setTabText(index+1, self.FNToQString(self.file))
             if self.tabNum == 0:
                 self.tabNum = 1
+                self.tab.setTabText(index, self.FNToQString(self.file))
             # Set the tab title to filename
-            self.tab.setCurrentIndex(index + 1)
-            self.tab.setTabText(index+1, self.FNToQString(self.file))
-            if self.tabNum == 1:
-                self.edit.setText(f.read())
-            else:
-                self.editDict.get(("edit"+str(self.tabNum))).setText(f.read())
-            self.edit.setModified(False)
-        # TODO: make the tabs display the right filename
+            #self.tab.setCurrentIndex(index + 1)
+            self.editDict.get(("edit"+str(self.tabNum))).setText(f.read())
+        # Not really sure where else to put this
+        self.editDict.get("edit"+str(self.tab.currentIndex()+1)).setModified(False)
+        self.editDict.get("edit"+str(self.tabNum)).textChanged.connect(self.unsaved)
 
     def __newEditor(self):
-        # A list of strings to be turned into editor objects
-        self.editDict = {"edit1":self.edit}
         self.tabNum+=1
         # Add a new entry to the dict and map it an editor object
         self.editDict["edit"+str(self.tabNum)] = Editor()
@@ -239,11 +236,11 @@ class mainWindow(QtGui.QMainWindow):
 
     def openFile(self):
         self.file = QtGui.QFileDialog.getOpenFileName(self, 'Open File',".")
-        config.filename = str(self.file)
+        print self.file
         try:
+            self.docList.apppend(str(self.file))
             self.open()
         except AttributeError:
-            config.filename = self.file
             self.open()
             # Add the filename to docList
             self.docList.append(str(self.file))
@@ -261,7 +258,6 @@ class mainWindow(QtGui.QMainWindow):
                 print self.docList
                 for x in self.docList:
                     self.file = x
-                    config.filename = self.file
                     self.open()
             except (IOError, OSError), e:
                 print e
@@ -272,12 +268,13 @@ class mainWindow(QtGui.QMainWindow):
 
     def save(self):
         # Save the file as plain text
-        with open(config.filename, "wt") as file:
-            file.write(self.edit.text())
+        with open(self.docList[self.tab.currentIndex()], "wt") as file:
+            file.write(self.editDict.get("edit"+str(self.tab.currentIndex()+1)).text())
         # Note that changes to the document are saved
         self.edit.setModified(False)
         # Set the tab title to filename
-        self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(config.filename))
+        self.tab.setTabText(self.tab.currentIndex(),
+                            self.FNToQString(self.docList[self.tab.currentIndex()]))
 
     def saveDocs(self):
         try:
@@ -291,8 +288,9 @@ class mainWindow(QtGui.QMainWindow):
 
     def saveFile(self):
         # Only open if it hasn't previously been saved
-        if config.filename == "Untitled":
-            config.filename = QtGui.QFileDialog.getSaveFileName(self, 'Save File')
+        if self.docList[self.tab.currentIndex()] == "Untitled":
+            self.docList[self.tab.currentIndex()] = \
+            QtGui.QFileDialog.getSaveFileName(self, 'Save File')
         self.save()
 
     def saveFileAs(self):
@@ -300,8 +298,9 @@ class mainWindow(QtGui.QMainWindow):
         self.save()
 
     def unsaved(self):
-        if self.edit.isModified() == True:
-            self.tab.setTabText(self.tab.currentIndex(), self.FNToQString(config.filename+"*"))
+        if self.editDict.get("edit"+str(self.tab.currentIndex()+1)).isModified:
+            self.tab.setTabText(self.tab.currentIndex(),
+                                self.FNToQString(self.docList[self.tab.currentIndex()]+"*"))
 
     def about(self):
         QtGui.QMessageBox.about(self, "About Codex",
@@ -314,8 +313,7 @@ class mainWindow(QtGui.QMainWindow):
         self.tab.setVisible(not state)
 
     def newTab(self):
-        self.tab.addTab(Editor(), config.filename)
-        self.tabNum+=1
+        self.__newEditor()
         self.tab.setTabsClosable(True)
 
     def showTerm(self):
