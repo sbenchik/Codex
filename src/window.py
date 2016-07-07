@@ -103,6 +103,12 @@ class mainWindow(QtGui.QMainWindow):
         self.fontAct = QtGui.QAction("Choose Font",self)
         self.fontAct.triggered.connect(self.chooseFont)
 
+    def getEditor(self, index):
+        return self.editDict.get(("edit"+str(index)))
+
+    def getCurrentTab(self):
+        return config.docList[self.tab.currentIndex()]
+
     def initMenubar(self):
         menubar = self.menuBar()
 
@@ -198,7 +204,7 @@ class mainWindow(QtGui.QMainWindow):
             langAct.setActionGroup(langGrp)
             self.lexActs[langAct] = i
         langGrp.triggered.connect(  \
-            lambda lex: self.editDict.get("edit"+str(self.tab.currentIndex()+1)) \
+            lambda lex: self.getEditor(self.tab.currentIndex()+1) \
             .setLang(self.lexActs.get(lex)))
 
     def new(self):
@@ -220,10 +226,10 @@ class mainWindow(QtGui.QMainWindow):
                 self.tab.setTabText(index, self.FNToQString(self.file))
             # Set the tab title to filename
             #self.tab.setCurrentIndex(index + 1)
-            self.editDict.get(("edit"+str(self.tabNum))).setText(f.read())
+            self.getEditor(self.tabNum).setText(f.read())
         # Not really sure where else to put this
-        self.editDict.get("edit"+str(self.tab.currentIndex()+1)).setModified(False)
-        self.editDict.get("edit"+str(self.tabNum)).textChanged.connect(self.unsaved)
+        self.getEditor(self.tab.currentIndex()+1).setModified(False)
+        self.getEditor(self.tabNum).textChanged.connect(self.unsaved)
 
     def __newEditor(self):
         self.tabNum+=1
@@ -231,7 +237,7 @@ class mainWindow(QtGui.QMainWindow):
         self.editDict["edit"+str(self.tabNum)] = Editor()
         print self.editDict
         print self.tabNum
-        self.tab.addTab(self.editDict.get(("edit"+str(self.tabNum))),
+        self.tab.addTab(self.getEditor(self.tabNum),
                                           self.FNToQString(self.file))
 
     def openFile(self):
@@ -268,13 +274,13 @@ class mainWindow(QtGui.QMainWindow):
 
     def save(self):
         # Save the file as plain text
-        with open(config.docList[self.tab.currentIndex()], "wt") as file:
-            file.write(self.editDict.get("edit"+str(self.tab.currentIndex()+1)).text())
+        with open(self.getCurrentTab(), "wt") as file:
+            file.write(self.getEditor(self.tab.currentIndex()+1).text())
         # Note that changes to the document are saved
         self.edit.setModified(False)
         # Set the tab title to filename
         self.tab.setTabText(self.tab.currentIndex(),
-                            self.FNToQString(config.docList[self.tab.currentIndex()]))
+                            self.FNToQString(self.getCurrentTab()))
 
     def saveDocs(self):
         try:
@@ -288,7 +294,7 @@ class mainWindow(QtGui.QMainWindow):
 
     def saveFile(self):
         # Only open if it hasn't previously been saved
-        if config.docList[self.tab.currentIndex()] == "Untitled":
+        if self.getCurrentTab() == "Untitled":
             config.docList[self.tab.currentIndex()] = \
             QtGui.QFileDialog.getSaveFileName(self, 'Save File')
         self.save()
@@ -298,9 +304,9 @@ class mainWindow(QtGui.QMainWindow):
         self.save()
 
     def unsaved(self):
-        if self.editDict.get("edit"+str(self.tab.currentIndex()+1)).isModified:
+        if self.getEditor(self.tab.currentIndex()+1).isModified:
             self.tab.setTabText(self.tab.currentIndex(),
-                                self.FNToQString(config.docList[self.tab.currentIndex()]+"*"))
+                                self.FNToQString(self.getCurrentTab()+"*"))
 
     def about(self):
         QtGui.QMessageBox.about(self, "About Codex",
