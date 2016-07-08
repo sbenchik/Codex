@@ -31,6 +31,19 @@ class mainWindow(QtGui.QMainWindow):
 
         self.initUI()
 
+    def writeSettings(self):
+        settings = QSettings()
+        font = settings.setValue("Editor/font", QVariant(config.font.toString()))
+        term = settings.setValue("mainWindow/term", QVariant(self.termVis))
+        tree = settings.setValue("mainWindow/tree", QVariant(self.treeVis))
+
+    def readSettings(self):
+        settings = QSettings()
+        if config.font.fromString(settings.value("Editor/font").toString()):
+            config.lexer.setFont(config.font)
+        self.termVis = settings.value("mainWindow/term", QVariant(False)).toBool()
+        self.treeVis = settings.value("mainWindow/tree", QVariant(False)).toBool()
+
     def initActions(self):
         self.newAction = QtGui.QAction("New Window",self)
         self.newAction.setShortcut("Ctrl+N")
@@ -54,29 +67,36 @@ class mainWindow(QtGui.QMainWindow):
 
         self.cutAction = QtGui.QAction("Cut",self)
         self.cutAction.setShortcut("Ctrl+X")
-        self.cutAction.triggered.connect(lambda cut: self.edit.cut)
+        self.cutAction.triggered.connect(lambda cut:
+                                         self.getEditor(self.tab.currentIndex).cut)
 
         self.copyAction = QtGui.QAction("Copy",self)
         self.copyAction.setShortcut("Ctrl+C")
-        self.copyAction.triggered.connect(lambda copy: self.edit.copy)
+        self.copyAction.triggered.connect(lambda copy:
+                                          self.getEditor(self.tab.currentIndex).copy)
 
         self.pasteAction = QtGui.QAction("Paste",self)
         self.pasteAction.setShortcut("Ctrl+V")
-        self.pasteAction.triggered.connect(lambda paste: self.edit.paste)
+        self.pasteAction.triggered.connect(lambda paste:
+                                           self.getEditor(self.tab.currentIndex).paste)
 
         self.undoAction = QtGui.QAction("Undo",self)
         self.undoAction.setShortcut("Ctrl+Z")
-        self.undoAction.triggered.connect(lambda undo: self.edit.undo)
+        self.undoAction.triggered.connect(lambda undo:
+                                          self.getEditor(self.tab.currentIndex).undo)
 
         self.redoAction = QtGui.QAction("Redo",self)
         self.redoAction.setShortcut("Ctrl+Y")
-        self.redoAction.triggered.connect(lambda redo: self.edit.redo)
+        self.redoAction.triggered.connect(lambda redo:
+                                          self.getEditor(self.tab.currentIndex).redo)
 
         self.aboutAction = QtGui.QAction("About Codex",self)
         self.aboutAction.triggered.connect(self.about)
 
         self.noLexAct = QtGui.QAction("Plain Text",self)
-        self.noLexAct.triggered.connect(lambda noLex: self.edit.setLexer(QsciLexerText()))
+        self.noLexAct.triggered.connect(lambda noLex:
+                                        self.getEditor(self.tab.currentIndex).\
+                                        setLexer(QsciLexerText()))
 
         self.termAct = QtGui.QAction("Terminal",self)
         self.termAct.setCheckable(True)
@@ -184,7 +204,8 @@ class mainWindow(QtGui.QMainWindow):
         self.setWindowIcon(QtGui.QIcon(os.path.join(
         os.path.dirname(os.path.dirname(__file__)))+ \
         "/icons/256x256/codex.png"))
-        # Open any documents that were open before closing
+        # Open any documents that were open before closing and restore settings
+        self.readSettings()
         self.loadDocs()
 
     def initLexers(self):
@@ -369,8 +390,9 @@ class mainWindow(QtGui.QMainWindow):
             config.lexer.setFont(config.font, -1)
 
     # This method adapted from Peter Goldsborough's Writer.
-    # Alerts the user if they are saving an edited file.
+    # Save settings and alerts the user if they are saving an edited file.
     def closeEvent(self,event):
+        self.writeSettings()
         self.saveDocs()
         if not self.edit.isModified():
             event.accept()
