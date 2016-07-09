@@ -1,9 +1,10 @@
 # Adapted from Peter Goldsborough at
 # https://www.binpress.com/tutorial/building-a-text-editor-with-pyqt-part-3/147
-
+import sys, os
+os.sys.path.insert(0,os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import re, config
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import Qt
-import re
 from PyQt4.Qsci import *
 
 class Find(QtGui.QDialog):
@@ -37,6 +38,8 @@ class Find(QtGui.QDialog):
          # Normal mode - radio button
         self.normalRadio = QtGui.QRadioButton("Normal",self)
         self.normalRadio.toggled.connect(self.normalMode)
+        # Normal mode is default setting
+        self.normalRadio.setChecked(True)
 
         # Regular Expression Mode - radio button
         self.regexRadio = QtGui.QRadioButton("RegEx",self)
@@ -89,6 +92,9 @@ class Find(QtGui.QDialog):
         self.setWindowTitle("Find and Replace")
         self.setLayout(layout)
 
+    def getCurrentEditor(self):
+        return self.parent.getEditor(self.parent.tab.currentIndex()+1)
+
     def regexMode(self):
         # Uncheck and then disable case sensitive/whole words in regex mode
         self.caseSens.setChecked(False)
@@ -110,12 +116,16 @@ class Find(QtGui.QDialog):
         # Get the text to find
         self.expr = self.findField.toPlainText()
         # Use QScintilla's built in find method for this
-        QsciScintilla.findFirst(self.parent.edit, self.expr, self.re, self.cs, self.wo, True)
+        self.getCurrentEditor().findFirst(self.expr, self.re, self.cs, self.wo, True)
 
     def replace(self):
         self.replaceStr = self.replaceField.toPlainText()
         self.find()
-        QsciScintilla.replace(self.parent.edit, self.replaceStr)
+        self.getCurrentEditor().replace(self.replaceStr)
 
     def replaceAll(self):
-        pass
+        self.replaceStr = self.replaceField.toPlainText()
+        self.find()
+        while self.getCurrentEditor().findNext():
+            self.getCurrentEditor().findNext()
+            self.getCurrentEditor().replace(self.replaceStr)

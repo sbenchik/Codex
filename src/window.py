@@ -68,34 +68,34 @@ class mainWindow(QtGui.QMainWindow):
         self.cutAction = QtGui.QAction("Cut",self)
         self.cutAction.setShortcut("Ctrl+X")
         self.cutAction.triggered.connect(lambda cut:
-                                         self.getEditor(self.tab.currentIndex).cut)
+                                         self.getEditor(self.tab.currentIndex()).cut)
 
         self.copyAction = QtGui.QAction("Copy",self)
         self.copyAction.setShortcut("Ctrl+C")
         self.copyAction.triggered.connect(lambda copy:
-                                          self.getEditor(self.tab.currentIndex).copy)
+                                          self.getEditor(self.tab.currentIndex()).copy)
 
         self.pasteAction = QtGui.QAction("Paste",self)
         self.pasteAction.setShortcut("Ctrl+V")
         self.pasteAction.triggered.connect(lambda paste:
-                                           self.getEditor(self.tab.currentIndex).paste)
+                                           self.getEditor(self.tab.currentIndex()).paste)
 
         self.undoAction = QtGui.QAction("Undo",self)
         self.undoAction.setShortcut("Ctrl+Z")
         self.undoAction.triggered.connect(lambda undo:
-                                          self.getEditor(self.tab.currentIndex).undo)
+                                          self.getEditor(self.tab.currentIndex()).undo)
 
         self.redoAction = QtGui.QAction("Redo",self)
         self.redoAction.setShortcut("Ctrl+Y")
         self.redoAction.triggered.connect(lambda redo:
-                                          self.getEditor(self.tab.currentIndex).redo)
+                                          self.getEditor(self.tab.currentIndex()).redo)
 
         self.aboutAction = QtGui.QAction("About Codex",self)
         self.aboutAction.triggered.connect(self.about)
 
         self.noLexAct = QtGui.QAction("Plain Text",self)
         self.noLexAct.triggered.connect(lambda noLex:
-                                        self.getEditor(self.tab.currentIndex).\
+                                        self.getEditor(self.tab.currentIndex()).\
                                         setLexer(QsciLexerText()))
 
         self.termAct = QtGui.QAction("Terminal",self)
