@@ -34,12 +34,16 @@ class mainWindow(QtGui.QMainWindow):
     def writeSettings(self):
         settings = QSettings()
         font = settings.setValue("Editor/font", QVariant(config.font.toString()))
+        print config.font.toString()
         term = settings.setValue("mainWindow/term", QVariant(self.termVis))
         tree = settings.setValue("mainWindow/tree", QVariant(self.treeVis))
 
     def readSettings(self):
+        # The default 12 pt Ubuntu Mono represented as a toString() list
+        DEFAULT_FONT = "Ubuntu Mono,12,-1,5,50,0,0,0,0,0"
         settings = QSettings()
-        if config.font.fromString(settings.value("Editor/font").toString()):
+        if config.font.fromString(settings.value("Editor/font",
+                                                QVariant(DEFAULT_FONT)).toString()):
             config.lexer.setFont(config.font)
         self.termVis = settings.value("mainWindow/term", QVariant(False)).toBool()
         self.treeVis = settings.value("mainWindow/tree", QVariant(False)).toBool()
