@@ -9,7 +9,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.Qsci import *
 
-from ext.terminal import XTerm
+from ext.pyqterm import TerminalWidget
 from ext.find import Find
 from ext.fileTree import Tree
 
@@ -203,8 +203,10 @@ class mainWindow(QtGui.QMainWindow):
         self.initActions()
         self.initMenubar()
         self.initTabs()
-        # Create terminal and widget
-        self.term = XTerm(self)
+        # Create terminal widget and automatically hide it because otherwise
+        # it will awkwardly hover in the corner
+        self.term = TerminalWidget(self)
+        self.term.hide()
         # x and y coordinates on the screen, width, height
         self.setGeometry(100,100,600,430)
         self.setWindowTitle("Codex")
@@ -358,7 +360,9 @@ class mainWindow(QtGui.QMainWindow):
     def showTerm(self):
         self.termVis = True
         self.termSplit.addWidget(self.term)
-        self.term.show_term()
+        self.term.resize(600,30)
+        self.term.setFont(config.font)
+        self.term.show()
 
     def hideTerm(self):
         self.termVis = False
