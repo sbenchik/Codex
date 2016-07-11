@@ -218,7 +218,7 @@ class mainWindow(QtGui.QMainWindow):
         self.loadDocs()
         # Show the terminal/tree if necessary.
         # Have to implement project dir first.
-        # self.loadTermAndTree()
+        self.loadTermAndTree()
 
     def initLexers(self):
         # Dict that maps lexer actions to their respective strings
@@ -384,12 +384,16 @@ class mainWindow(QtGui.QMainWindow):
     def loadTermAndTree(self):
         if self.treeVis:
             self.showTree()
+            self.treeAct.setChecked(True)
         else:
             self.treeVis = False
+            self.treeAct.setChecked(False)
         if self.termVis:
             self.showTerm()
+            self.termAct.setChecked(True)
         else:
             self.termVis = False
+            self.termAct.setChecked(False)
 
     def toggleIntGuide(self):
         state = self.edit.indentationGuides()
