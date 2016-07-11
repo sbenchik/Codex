@@ -29,7 +29,7 @@ From there run
 
 	python Codex/Codex
 
-from the directory you downloaded Codex into. Currently Codex has only been tested on Linux (Ubuntu 16.04), but it should work fine on OS X providedan X server like XQuartz is running. 
+from the directory you downloaded Codex into. Currently Codex has only been tested on Linux (Ubuntu 16.04), but it should work fine on OS X and Windows if everything above is installed. 
 
 # Acknowledgments
 The icon is made by [Logo_Jim](http://electriceyecreations.tumblr.com) from Reddit.
