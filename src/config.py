@@ -50,5 +50,6 @@ LEXERS = {
 docList = []
 font = QFont("Ubuntu Mono", 12, 50)
 lexer = QsciLexerText()
+proDir = ""
 from window import mainWindow
 m = mainWindow()

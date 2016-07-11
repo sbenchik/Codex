@@ -34,9 +34,9 @@ class mainWindow(QtGui.QMainWindow):
     def writeSettings(self):
         settings = QSettings()
         font = settings.setValue("Editor/font", QVariant(config.font.toString()))
-        print config.font.toString()
         term = settings.setValue("mainWindow/term", QVariant(self.termVis))
         tree = settings.setValue("mainWindow/tree", QVariant(self.treeVis))
+        pDir = settings.setValue("fileTree/proDir", QVariant(config.proDir))
 
     def readSettings(self):
         # The default 12 pt Ubuntu Mono represented as a toString() list
@@ -47,6 +47,7 @@ class mainWindow(QtGui.QMainWindow):
             config.lexer.setFont(config.font)
         self.termVis = settings.value("mainWindow/term", QVariant(False)).toBool()
         self.treeVis = settings.value("mainWindow/tree", QVariant(False)).toBool()
+        config.proDir = settings.value("fileTree/proDir").toString()
 
     def initActions(self):
         self.newAction = QtGui.QAction("New Window",self)
@@ -127,6 +128,9 @@ class mainWindow(QtGui.QMainWindow):
         self.fontAct = QtGui.QAction("Choose Font",self)
         self.fontAct.triggered.connect(self.chooseFont)
 
+        self.dirAct = QtGui.QAction("Choose Project Directory",self)
+        self.dirAct.triggered.connect(self.setProDir)
+
     def getEditor(self, index):
         return self.editDict.get(("edit"+str(index)))
 
@@ -151,6 +155,7 @@ class mainWindow(QtGui.QMainWindow):
         file.addAction(self.saveasAction)
         file.addSeparator()
         file.addAction(self.fontAct)
+        file.addAction(self.dirAct)
 
         edit.addAction(self.undoAction)
         edit.addAction(self.redoAction)
@@ -211,6 +216,9 @@ class mainWindow(QtGui.QMainWindow):
         # Open any documents that were open before closing and restore settings
         self.readSettings()
         self.loadDocs()
+        # Show the terminal/tree if necessary.
+        # Have to implement project dir first.
+        # self.loadTermAndTree()
 
     def initLexers(self):
         # Dict that maps lexer actions to their respective strings
@@ -373,6 +381,16 @@ class mainWindow(QtGui.QMainWindow):
     def toggleTree(self):
         self.hideTree() if self.treeVis else self.showTree()
 
+    def loadTermAndTree(self):
+        if self.treeVis:
+            self.showTree()
+        else:
+            self.treeVis = False
+        if self.termVis:
+            self.showTerm()
+        else:
+            self.termVis = False
+
     def toggleIntGuide(self):
         state = self.edit.indentationGuides()
         self.edit.setIndentationGuides(not state)
@@ -392,6 +410,14 @@ class mainWindow(QtGui.QMainWindow):
         if ok:
             config.font = font
             config.lexer.setFont(config.font, -1)
+
+    def setProDir(self):
+        pdir, ok = QtGui.QInputDialog.getText(self, "Set Project Directory",
+                                             "Enter absolute path (i.e. "\
+                                             "/home/steve/Documents)")
+        if ok:
+            config.proDir = pdir
+            print config.proDir
 
     # This method adapted from Peter Goldsborough's Writer.
     # Save settings and alerts the user if they are saving an edited file.
