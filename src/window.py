@@ -184,6 +184,8 @@ class mainWindow(QtGui.QMainWindow):
         self.tab.tabCloseRequested.connect(self.tab.removeTab)
         self.tab.tabCloseRequested.connect(self.lessTabs)
         self.tab.setMovable(True)
+        # Needed for Mac
+        self.tab.setDocumentMode(True)
         # Automatically make new tabs contain an editor widget
         self.tab.addTab(self.editDict.get("edit1"), config.filename)
         self.termSplit.addWidget(self.tab)
@@ -272,8 +274,7 @@ class mainWindow(QtGui.QMainWindow):
         self.editDict["edit"+str(self.tabNum)] = Editor()
         print self.editDict
         print self.tabNum
-        self.tab.addTab(self.getEditor(self.tabNum),
-                                          self.FNToQString(self.file))
+        self.tab.addTab(self.getEditor(self.tabNum))
 
     def openFile(self):
         self.file = QtGui.QFileDialog.getOpenFileName(self, 'Open File',".")
