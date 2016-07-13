@@ -6,7 +6,7 @@ hw.py
 
 *.pyc
 
-.open.p
+bin/.open.p
 
 *.sublime-project
 
