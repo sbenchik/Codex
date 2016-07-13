@@ -13,3 +13,5 @@ bin/.open.p
 src/themes/
 
 src/theme.py
+
+.DS_Store
