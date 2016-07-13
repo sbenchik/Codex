@@ -12,6 +12,7 @@ class Editor(QsciScintilla):
     def setLang(self, lex):
         config.lexer = self.getLexer(lex)
         config.lexer.setDefaultFont(config.font)
+        config.lexer.setDefaultColor(QColor("Black"))
         self.setLexer(config.lexer)
         # Setting the lexer resets the margin background to gray
         # so it has to be reset to white
@@ -49,6 +50,6 @@ class Editor(QsciScintilla):
         self.setAutoCompletionSource(QsciScintilla.AcsDocument)
         self.setAutoCompletionThreshold(4)
         # Set the language to plain text by default
-        self.setLexer(config.lexer)
+        #self.setLexer(config.lexer)
         # Set the font of the application to be a mono font
-        config.lexer.setFont(config.font)
+        #config.lexer.setFont(config.font)

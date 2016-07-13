@@ -12,6 +12,7 @@ def main():
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     import src.config
     src.config.m.show()
+    src.config.m.raise_()
     app.exec_()
 
 if __name__ == '__main__':

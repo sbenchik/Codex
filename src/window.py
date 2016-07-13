@@ -44,6 +44,7 @@ class mainWindow(QtGui.QMainWindow):
         settings = QSettings()
         if config.font.fromString(settings.value("Editor/font",
                                                 QVariant(DEFAULT_FONT)).toString()):
+            config.lexer.setDefaultColor(QColor("Black"))
             config.lexer.setFont(config.font)
         self.termVis = settings.value("mainWindow/term", QVariant(False)).toBool()
         self.treeVis = settings.value("mainWindow/tree", QVariant(False)).toBool()
@@ -184,6 +185,8 @@ class mainWindow(QtGui.QMainWindow):
         self.tab.tabCloseRequested.connect(self.tab.removeTab)
         self.tab.tabCloseRequested.connect(self.lessTabs)
         self.tab.setMovable(True)
+        # Needed for Mac
+        self.tab.setDocumentMode(True)
         # Automatically make new tabs contain an editor widget
         self.tab.addTab(self.editDict.get("edit1"), config.filename)
         self.termSplit.addWidget(self.tab)
@@ -216,10 +219,10 @@ class mainWindow(QtGui.QMainWindow):
         os.path.dirname(os.path.dirname(__file__)))+ \
         "/icons/256x256/codex.png"))
         # Open any documents that were open before closing and restore settings
-        self.readSettings()
         self.loadDocs()
+        self.readSettings()
+        #self.loadDocs()
         # Show the terminal/tree if necessary.
-        # Have to implement project dir first.
         self.loadTermAndTree()
 
     def initLexers(self):
@@ -242,6 +245,80 @@ class mainWindow(QtGui.QMainWindow):
             lambda lex: self.getEditor(self.tab.currentIndex()+1) \
             .setLang(self.lexActs.get(lex)))
 
+    def guessLexer(self):
+        try:
+            for x in config.docList:
+                n, e = os.path.basename(x).lower().split(".")
+                if e == "sh" or e == "bsh":
+                    self.getEditor(self.tabNum).setLang("Bash")
+                elif e == "cmd" or e == "bat" or e == "btm" or e == "nt":
+                    self.getEditor(self.tabNum).setLang("Batch")
+                elif e == "cmake" or e == "cmakelists":
+                    self.getEditor(self.tabNum).setLang("CMake")
+                elif e == "cpp" or e == "cxx" or e == "cc" or e == "c" or e == "h"\
+                or e == "hh" or e == "hpp":
+                    self.getEditor(self.tabNum).setLang("C++")
+                elif e == "cs":
+                    self.getEditor(self.tabNum).setLang("C#")
+                elif e == "css":
+                    self.getEditor(self.tabNum).setLang("CSS")
+                elif e == "d":
+                    self.getEditor(self.tabNum).setLang("D")
+                elif e == "diff" or e == "patch":
+                    self.getEditor(self.tabNum).setLang("Diff")
+                elif e == "f90" or e == "f95" or e == "f2k" or e == "f03" or e == "f15":
+                    self.getEditor(self.tabNum).setLang("Fortran")
+                elif e == "f" or e == "for":
+                    self.getEditor(self.tabNum).setLang("Fortran77")
+                elif e == "html" or e == "htm":
+                    self.getEditor(self.tabNum).setLang("HTML")
+                elif e == "java":
+                    self.getEditor(self.tabNum).setLang("Java")
+                elif e == "js":
+                    self.getEditor(self.tabNum).setLang("JavaScript")
+                elif e == "lua":
+                    self.getEditor(self.tabNum).setLang("Lua")
+                elif e == "mak" or n == "gnumakefile" or n == "makefile":
+                    self.getEditor(self.tabNum).setLang("Makefile")
+                elif e == "m":
+                    self.getEditor(self.tabNum).setLang("MATLAB")
+                elif e == "pas" or e == "inc":
+                    self.getEditor(self.tabNum).setLang("Pascal")
+                elif e == "ps":
+                    self.getEditor(self.tabNum).setLang("PostScript")
+                elif e == "pov" or e == "tga":
+                    self.getEditor(self.tabNum).setLang("POV-Ray")
+                elif e == "py" or e == "pyw":
+                    self.getEditor(self.tabNum).setLang("Python")
+                    print "p"
+                elif e == "rb" or e == "rbw":
+                    self.getEditor(self.tabNum).setLang("Ruby")
+                elif e == "cir":
+                    self.getEditor(self.tabNum).setLang("Spice")
+                elif e == "sql":
+                    self.getEditor(self.tabNum).setLang("SQL")
+                elif e == "tcl":
+                    self.getEditor(self.tabNum).setLang("TCL")
+                elif e == "tex":
+                    self.getEditor(self.tabNum).setLang("TeX")
+                elif e == "v" or e == "sv" or e == "vh" or e == "svh":
+                    self.getEditor(self.tabNum).setLang("Verilog")
+                elif e == "vhd" or e == "vhdl":
+                    self.getEditor(self.tabNum).setLang("VHDL")
+                elif e == "xml" or e == "xsl" or e == "xsml" or e == "xsd" or \
+                e == "kml" or e == "wsdl" or e == "xlf" or e == "xliff":
+                    self.getEditor(self.tabNum).setLang("XML")
+                elif e == "yml":
+                    self.getEditor(self.tabNum).setLang("YML")
+                else:
+                    config.lexer = QsciLexerText()
+                    self.getEditor(self.tabNum).setLexer(config.lexer)
+        except ValueError:
+                config.lexer = QsciLexerText()
+                self.getEditor(self.tabNum).setLexer(config.lexer)
+                self.noLexAct.setChecked(True)
+                print "i"
+
     def new(self):
         main = mainWindow()
         main.show()
@@ -260,8 +337,11 @@ class mainWindow(QtGui.QMainWindow):
                 self.tabNum = 1
                 self.tab.setTabText(index, self.FNToQString(self.file))
             # Set the tab title to filename
-            #self.tab.setCurrentIndex(index + 1)
+            #selopenf.tab.setCurrentIndex(index + 1)
             self.getEditor(self.tabNum).setText(f.read())
+        #config.lexer.setDefaultFont(config.font)
+        # Try to guess the lexer based on extension
+        self.guessLexer()
         # Not really sure where else to put this
         self.getEditor(self.tab.currentIndex()+1).setModified(False)
         self.getEditor(self.tabNum).textChanged.connect(self.unsaved)
@@ -272,8 +352,7 @@ class mainWindow(QtGui.QMainWindow):
         self.editDict["edit"+str(self.tabNum)] = Editor()
         print self.editDict
         print self.tabNum
-        self.tab.addTab(self.getEditor(self.tabNum),
-                                          self.FNToQString(self.file))
+        self.tab.addTab(self.getEditor(self.tabNum))
 
     def openFile(self):
         self.file = QtGui.QFileDialog.getOpenFileName(self, 'Open File',".")
@@ -345,7 +424,7 @@ class mainWindow(QtGui.QMainWindow):
 
     def about(self):
         QtGui.QMessageBox.about(self, "About Codex",
-                                "<p>Codex is a basic text editor for code " \
+                                "<p>Codex is a text editor for programmers " \
                                 "made with PyQt4 and QScintilla.</p>"
                                 )
 
