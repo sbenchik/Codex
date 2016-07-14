@@ -26,7 +26,7 @@ class QsciLexerText(Qsci.QsciLexerCustom):
 
     def defaultFont(self, style):
         if style == self.Default:
-            return QtGui.QFont("Mono", 10.5, QFont.Normal)
+            return QtGui.QFont("Ubuntu Mono", 12, 50)
         return Qsci.QsciLexerCustom.defaultFont(self, style)
 
     def styleText(self, start, end):

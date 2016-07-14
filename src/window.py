@@ -133,7 +133,10 @@ class mainWindow(QtGui.QMainWindow):
         self.dirAct.triggered.connect(self.setProDir)
 
     def getEditor(self, index):
-        return self.editDict.get(("edit"+str(index)))
+        if index == 0:
+            return self.editDict.get(("edit"+str(index+1)))
+        else:
+            return self.editDict.get(("edit"+str(index)))
 
     def getCurrentTab(self):
         return config.docList[self.tab.currentIndex()]
@@ -221,9 +224,12 @@ class mainWindow(QtGui.QMainWindow):
         # Open any documents that were open before closing and restore settings
         self.loadDocs()
         self.readSettings()
-        #self.loadDocs()
         # Show the terminal/tree if necessary.
         self.loadTermAndTree()
+        # If there are no documents to load set the language as plain text
+        if len(config.docList) == 0:
+            self.getEditor(self.tabNum).setLexer(QsciLexerText())
+            self.noLexAct.setChecked(True)
 
     def initLexers(self):
         # Dict that maps lexer actions to their respective strings
@@ -232,7 +238,7 @@ class mainWindow(QtGui.QMainWindow):
         langGrp.setExclusive(True)
         self.lang.addAction(self.noLexAct)
         self.noLexAct.setCheckable(True)
-        self.noLexAct.setChecked(True)
+        #self.noLexAct.setChecked(True)
         self.noLexAct.setActionGroup(langGrp)
         self.lang.addSeparator()
         languages = sorted(config.LEXERS.keys())
@@ -312,9 +318,13 @@ class mainWindow(QtGui.QMainWindow):
                     self.getEditor(self.tabNum).setLang("YML")
                 else:
                     config.lexer = QsciLexerText()
+                    config.lexer.setDefaultFont(config.font)
+                    config.lexer.setDefaultColor(QColor("Black"))
                     self.getEditor(self.tabNum).setLexer(config.lexer)
         except ValueError:
                 config.lexer = QsciLexerText()
+                config.lexer.setDefaultFont(config.font)
+                config.lexer.setDefaultColor(QColor("Black"))
                 self.getEditor(self.tabNum).setLexer(config.lexer)
                 self.noLexAct.setChecked(True)
                 print "i"
@@ -368,8 +378,7 @@ class mainWindow(QtGui.QMainWindow):
 
     def loadDocs(self):
         fh = None
-        if "No such file or directory" in \
-        str(subprocess.Popen("find .open.p",shell=True).wait()):
+        if not os.access(".open.p", os.F_OK):
             return
         else:
             try:

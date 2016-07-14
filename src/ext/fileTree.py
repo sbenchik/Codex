@@ -13,6 +13,7 @@ class Tree(QWidget):
 
     def initUI(self):
         self.fsModel = QtGui.QFileSystemModel()
+        self.sModel = QtGui.QItemSelectionModel(self.fsModel)
         # If the user entered a project directory, use that.
         # If not, go two levels up from the current file
         if config.proDir is not "":
@@ -20,7 +21,8 @@ class Tree(QWidget):
         else:
             self.fsIndex = self.fsModel.setRootPath(QString( \
                                         os.path.dirname(os.path.dirname( \
-                                                        config.docList[config.m.tab.currentIndex()]))))
+                                                        config.docList \
+                                                        [config.m.tab.currentIndex()]))))
         self.treeView = QtGui.QTreeView(self)
         self.treeView.setModel(self.fsModel)
         self.treeView.setDragEnabled(True)
@@ -35,6 +37,15 @@ class Tree(QWidget):
         self.treeView.clicked.connect(self.clicked)
 
     def clicked(self):
-        self.file = self.fsModel.fileName(self.fsIndex)
-        config.filename = str(self.file)
-        config.m.open()
+        print self.sModel.selectedIndexes()
+        config.m.file = self.fsModel.filePath(self.fsModel.index(
+                                            self.sModel.selectedIndexes()))
+        print config.m.file
+        try:
+            config.docList.apppend(str(self.file))
+            config.m.open()
+        except AttributeError:
+            config.m.open()
+            # Add the filename to docList
+            config.docList.append(str(self.file))
+            print config.docList
