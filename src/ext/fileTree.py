@@ -25,6 +25,7 @@ class Tree(QWidget):
                                                         [config.m.tab.currentIndex()]))))
         self.treeView = QtGui.QTreeView(self)
         self.treeView.setModel(self.fsModel)
+        self.treeView.setSelectionModel(self.sModel)
         self.treeView.setDragEnabled(True)
         self.treeView.setDragDropMode(QAbstractItemView.InternalMove)
         self.treeView.setRootIndex(self.fsIndex)
@@ -34,18 +35,17 @@ class Tree(QWidget):
         self.treeView.hideColumn(2)
         self.treeView.hideColumn(3)
         self.treeView.resize(150,430)
-        self.treeView.clicked.connect(self.clicked)
+        #self.treeView.clicked.connect(self.clicked)
 
     def clicked(self):
-        print self.sModel.selectedIndexes()
-        config.m.file = self.fsModel.filePath(self.fsModel.index(
-                                            self.sModel.selectedIndexes()))
-        print config.m.file
+        print config.docList
+        config.m.file = self.fsModel.filePath(self.sModel.selectedIndexes()[0])
         try:
-            config.docList.apppend(str(self.file))
+            config.docList.apppend(str(config.m.file))
+            print config.docList
             config.m.open()
         except AttributeError:
             config.m.open()
             # Add the filename to docList
-            config.docList.append(str(self.file))
+            config.docList.append(str(config.m.file))
             print config.docList
