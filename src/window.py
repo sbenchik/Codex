@@ -179,10 +179,18 @@ class mainWindow(QtGui.QMainWindow):
 
     def lessTabs(self):
         self.tabNum = self.tabNum - 1
-        config.docList.remove(config.docList[self.tab.currentIndex()-1])
-        print config.docList
-        if self.tabNum <= 1:
-            self.tab.setTabsClosable(False)
+        try:
+            print config.docList
+            config.docList.remove(config.docList[self.tab.currentIndex()-1])
+        except:
+            if len(config.docList) == 0:
+                pass
+        finally:
+            if self.tabNum < 1:
+                self.newTab()
+            else:
+                self.tab.removeTab(self.tab.currentIndex()-1)
+            print self.tabNum
 
     def initTabs(self):
         # Set up the tabs
@@ -191,9 +199,11 @@ class mainWindow(QtGui.QMainWindow):
         self.tab.setMovable(True)
         # Needed for Mac
         self.tab.setDocumentMode(True)
+        self.setUnifiedTitleAndToolBarOnMac(True)
         # Automatically make new tabs contain an editor widget
         self.tab.addTab(self.editDict.get("edit1"), config.filename)
         self.termSplit.addWidget(self.tab)
+        self.setTabsClosable(True)
 
 
     def initUI(self):
@@ -339,7 +349,6 @@ class mainWindow(QtGui.QMainWindow):
             if self.tabNum >= 1:
                 self.newEditor()
                 print "t"
-                self.tab.setTabsClosable(True)
                 self.tab.setTabText(index+1, self.FNToQString(self.file))
                 self.getEditor(self.tabNum).setText(f.read())
                 self.tab.setCurrentIndex(index+1)
@@ -445,7 +454,6 @@ class mainWindow(QtGui.QMainWindow):
         self.editDict["edit"+str(self.tabNum)] = Editor()
         self.tab.addTab(self.getEditor(self.tabNum),
                         QString("Untitled"))
-        self.tab.setTabsClosable(True)
 
     def showTerm(self):
         self.termVis = True
