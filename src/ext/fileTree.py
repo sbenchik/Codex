@@ -38,14 +38,13 @@ class Tree(QWidget):
         #self.treeView.clicked.connect(self.clicked)
 
     def clicked(self):
-        print config.docList
+        #print config.docList
         config.m.file = self.fsModel.filePath(self.sModel.selectedIndexes()[0])
         try:
             config.docList.apppend(str(config.m.file))
             print config.docList
             config.m.open()
         except AttributeError:
-            config.m.open()
-            # Add the filename to docList
             config.docList.append(str(config.m.file))
+            config.m.open()
             print config.docList

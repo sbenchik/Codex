@@ -337,7 +337,8 @@ class mainWindow(QtGui.QMainWindow):
         index = self.tab.currentIndex()
         with open(self.file,"rt") as f:
             if self.tabNum >= 1:
-                self.__newEditor()
+                self.newEditor()
+                print "t"
                 self.tab.setTabsClosable(True)
                 self.tab.setTabText(index+1, self.FNToQString(self.file))
                 self.getEditor(self.tabNum).setText(f.read())
@@ -353,12 +354,13 @@ class mainWindow(QtGui.QMainWindow):
         self.getEditor(self.tab.currentIndex()+1).setModified(False)
         self.getEditor(self.tabNum).textChanged.connect(self.unsaved)
 
-    def __newEditor(self):
+    def newEditor(self):
         self.tabNum+=1
         # Add a new entry to the dict and map it an editor object
         self.editDict["edit"+str(self.tabNum)] = Editor()
         self.tab.addTab(self.getEditor(self.tabNum),
                         self.FNToQString(self.file))
+        print "o"
 
     def openFile(self):
         self.file = QtGui.QFileDialog.getOpenFileName(self, 'Open File',".")
@@ -438,7 +440,11 @@ class mainWindow(QtGui.QMainWindow):
         self.tab.setVisible(not state)
 
     def newTab(self):
-        self.__newEditor()
+        self.tabNum+=1
+        # Add a new entry to the dict and map it to an editor object
+        self.editDict["edit"+str(self.tabNum)] = Editor()
+        self.tab.addTab(self.getEditor(self.tabNum),
+                        QString("Untitled"))
         self.tab.setTabsClosable(True)
 
     def showTerm(self):
@@ -533,3 +539,7 @@ class mainWindow(QtGui.QMainWindow):
             elif response == QtGui.QMessageBox.Discard:
                 event.accept()
             else: event.ignore()
+
+    def resizeEvent(self,event):
+        self.ftree.treeView.resize(self.ftree.treeView.width(), self.height())
+        print self.ftree.height()
