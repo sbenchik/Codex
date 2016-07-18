@@ -1,5 +1,5 @@
 import sys, os
-os.sys.path.insert(0,os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import config
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import *
@@ -35,16 +35,16 @@ class Tree(QWidget):
         self.treeView.hideColumn(2)
         self.treeView.hideColumn(3)
         self.treeView.resize(150,430)
-        #self.treeView.clicked.connect(self.clicked)
+        self.treeView.clicked.connect(self.clicked)
 
     def clicked(self):
-        #print config.docList
+        print config.m
         config.m.file = self.fsModel.filePath(self.sModel.selectedIndexes()[0])
         try:
             config.docList.apppend(str(config.m.file))
-            print config.docList
+            #print config.docList
             config.m.open()
         except AttributeError:
             config.docList.append(str(config.m.file))
             config.m.open()
-            print config.docList
+            #print config.docList

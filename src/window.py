@@ -133,7 +133,7 @@ class mainWindow(QtGui.QMainWindow):
         self.dirAct.triggered.connect(self.setProDir)
 
     def getEditor(self, index):
-        print index
+        #print index
         if index == 0:
             return self.editDict.get("edit1")
         else:
@@ -180,7 +180,7 @@ class mainWindow(QtGui.QMainWindow):
     def lessTabs(self):
         self.tabNum = self.tabNum - 1
         try:
-            print config.docList
+            #print config.docList
             config.docList.remove(config.docList[self.tab.currentIndex()-1])
         except:
             if len(config.docList) == 0:
@@ -190,7 +190,7 @@ class mainWindow(QtGui.QMainWindow):
                 self.newTab()
             else:
                 self.tab.removeTab(self.tab.currentIndex()-1)
-            print self.tabNum
+            #print self.tabNum
 
     def initTabs(self):
         # Set up the tabs
@@ -227,7 +227,7 @@ class mainWindow(QtGui.QMainWindow):
         self.setGeometry(100,100,600,430)
         self.setWindowTitle("Codex")
         # Move up to the parent directory and set the window icons.
-        # Without os.path it will look for icons in bin/
+        # Without os.path it will look for icons in src/
         self.setWindowIcon(QtGui.QIcon(os.path.join(
         os.path.dirname(os.path.dirname(__file__)))+ \
         "/icons/256x256/codex.png"))
@@ -240,7 +240,8 @@ class mainWindow(QtGui.QMainWindow):
         if len(config.docList) == 0:
             self.getEditor(self.tabNum).setLexer(QsciLexerText())
             self.noLexAct.setChecked(True)
-        self.guessLexer()
+        else:
+            self.guessLexer()
 
     def initLexers(self):
         # Dict that maps lexer actions to their respective strings
@@ -308,7 +309,7 @@ class mainWindow(QtGui.QMainWindow):
                 self.getEditor(self.tabNum).setLang("POV-Ray")
             elif e == "py" or e == "pyw":
                 self.getEditor(self.tabNum).setLang("Python")
-                print "p"
+                #print "p"
             elif e == "rb" or e == "rbw":
                 self.getEditor(self.tabNum).setLang("Ruby")
             elif e == "cir":
@@ -347,7 +348,7 @@ class mainWindow(QtGui.QMainWindow):
         with open(self.file,"rt") as f:
             if self.tabNum >= 1:
                 self.newEditor()
-                print "t"
+                #print "t"
                 self.tab.setTabText(index+1, self.FNToQString(self.file))
                 self.getEditor(self.tabNum).setText(f.read())
                 self.tab.setCurrentIndex(index+1)
@@ -368,19 +369,18 @@ class mainWindow(QtGui.QMainWindow):
         self.editDict["edit"+str(self.tabNum)] = Editor()
         self.tab.addTab(self.getEditor(self.tabNum),
                         self.FNToQString(self.file))
-        print "o"
+        #print "o"
 
     def openFile(self):
         self.file = QtGui.QFileDialog.getOpenFileName(self, 'Open File',".")
         try:
             config.docList.apppend(str(self.file))
-            print "k"
+            #print "k"
             self.open()
         except AttributeError:
             config.docList.append(str(self.file))
             self.open()
-            # Add the filename to docList
-            print "h"
+            #print "h"
 
     def loadDocs(self):
         fh = None
@@ -390,12 +390,12 @@ class mainWindow(QtGui.QMainWindow):
             try:
                 fh = gzip.open(unicode(".open.p"), "rb")
                 config.docList = cPickle.load(fh)
-                #print config.docList
+                ##print config.docList
                 for x in config.docList:
                     self.file = x
                     self.open()
             except (IOError, OSError), e:
-                print e
+                #print e
                 return
             finally:
                 if fh is not None:
@@ -522,7 +522,7 @@ class mainWindow(QtGui.QMainWindow):
                                              "/home/steve/Documents)")
         if ok:
             config.proDir = pdir
-            print config.proDir
+            #print config.proDir
 
     # This method adapted from Peter Goldsborough's Writer.
     # Save settings and alerts the user if they are saving an edited file.
@@ -549,4 +549,4 @@ class mainWindow(QtGui.QMainWindow):
 
     def resizeEvent(self,event):
         self.ftree.treeView.resize(self.ftree.treeView.width(), self.height())
-        print self.ftree.height()
+        #print self.ftree.height()

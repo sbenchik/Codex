@@ -53,3 +53,4 @@ lexer = QsciLexerText()
 proDir = ""
 from window import mainWindow
 m = mainWindow()
+print m

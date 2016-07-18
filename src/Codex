@@ -1,0 +1,20 @@
+"""
+Runner script for Codex. This probably shouldn't be in src/ but some things
+don't work unless this is in src/.
+"""
+
+#!/usr/bin/env python
+import sys, os
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+
+def main():
+    app = QApplication(sys.argv)
+    #sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    import config
+    config.m.show()
+    config.m.raise_()
+    app.exec_()
+
+if __name__ == '__main__':
+    main()
