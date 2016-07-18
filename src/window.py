@@ -203,8 +203,7 @@ class mainWindow(QtGui.QMainWindow):
         # Automatically make new tabs contain an editor widget
         self.tab.addTab(self.editDict.get("edit1"), config.filename)
         self.termSplit.addWidget(self.tab)
-        self.setTabsClosable(True)
-
+        self.tab.setTabsClosable(True)
 
     def initUI(self):
         # Create first qsplitter for sidebar
