@@ -1,7 +1,7 @@
 """
 File that contains global variables
 """
-
+import sys
 from PyQt4.Qsci import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -48,7 +48,12 @@ LEXERS = {
 
 
 docList = []
-font = QFont("Ubuntu Mono", 12, 50)
+if sys.platform.startswith("linux"):
+    font = QFont("DejaVu Sans Mono", 12, 50)
+elif sys.platform.startswith("darwin"):
+    font = QFont("Monaco", 12, 50)
+elif sys.platform.startswith("win"):
+    font = QFont("Courier New", 12, 50)
 lexer = QsciLexerText()
 proDir = ""
 from window import mainWindow

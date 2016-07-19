@@ -39,8 +39,8 @@ class mainWindow(QtGui.QMainWindow):
         pDir = settings.setValue("fileTree/proDir", QVariant(config.proDir))
 
     def readSettings(self):
-        # The default 12 pt Ubuntu Mono represented as a toString() list
-        DEFAULT_FONT = "Ubuntu Mono,12,-1,5,50,0,0,0,0,0"
+        # The default fonts represented as a toString() list
+        DEFAULT_FONT = str(config.font.family())+",12,-1,5,50,0,0,0,0,0"
         settings = QSettings()
         if config.font.fromString(settings.value("Editor/font",
                                                 QVariant(DEFAULT_FONT)).toString()):
@@ -216,9 +216,9 @@ class mainWindow(QtGui.QMainWindow):
         self.treeSplit.addWidget(self.termSplit)
         self.setCentralWidget(self.treeSplit)
         # Create everything else
+        self.initTabs()
         self.initActions()
         self.initMenubar()
-        self.initTabs()
         # Create terminal widget and automatically hide it because otherwise
         # it will awkwardly hover in the corner
         self.term = TerminalWidget(self)
@@ -232,11 +232,12 @@ class mainWindow(QtGui.QMainWindow):
         os.path.dirname(os.path.dirname(__file__)))+ \
         "/icons/256x256/codex.png"))
         # Open any documents that were open before closing and restore settings
-        self.loadDocs()
+        QTimer.singleShot(0,self.loadDocs)
         self.readSettings()
         # Show the terminal/tree if necessary.
         self.loadTermAndTree()
         # If there are no documents to load set the language as plain text
+        # If there are documents to load guess lexers for them
         if len(config.docList) == 0:
             self.getEditor(self.tabNum).setLexer(QsciLexerText())
             self.noLexAct.setChecked(True)
@@ -265,7 +266,7 @@ class mainWindow(QtGui.QMainWindow):
 
     def guessLexer(self):
         try:
-            print config.docList
+            #print config.docList
             x = config.docList[self.tab.currentIndex()]
             n, e = os.path.basename(x).lower().split(".")
             if e == "sh" or e == "bsh":
@@ -514,7 +515,11 @@ class mainWindow(QtGui.QMainWindow):
         font, ok = QtGui.QFontDialog.getFont()
         if ok:
             config.font = font
-            config.lexer.setFont(config.font, -1)
+            try:
+                self.getEditor(self.tab.currentIndex()).lexer.setFont(config.font)
+            except AttributeError:
+                self.getEditor(self.tab.currentIndex()).setLexer(QsciLexerText())
+                self.getEditor(self.tab.currentIndex()).lexer.setFont(config.font)
 
     def setProDir(self):
         pdir, ok = QtGui.QInputDialog.getText(self, "Set Project Directory",
@@ -523,6 +528,7 @@ class mainWindow(QtGui.QMainWindow):
         if ok:
             config.proDir = pdir
             #print config.proDir
+
 
     # This method adapted from Peter Goldsborough's Writer.
     # Save settings and alerts the user if they are saving an edited file.
@@ -548,5 +554,9 @@ class mainWindow(QtGui.QMainWindow):
             else: event.ignore()
 
     def resizeEvent(self,event):
-        self.ftree.treeView.resize(self.ftree.treeView.width(), self.height())
+        # Don't try to resize a non-existant file tree
+        try:
+            self.ftree.treeView.resize(self.ftree.treeView.width(), self.height())
+        except:
+            pass
         #print self.ftree.height()

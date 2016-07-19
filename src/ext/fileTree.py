@@ -38,7 +38,6 @@ class Tree(QWidget):
         self.treeView.clicked.connect(self.clicked)
 
     def clicked(self):
-        print config.m
         config.m.file = self.fsModel.filePath(self.sModel.selectedIndexes()[0])
         try:
             config.docList.apppend(str(config.m.file))
