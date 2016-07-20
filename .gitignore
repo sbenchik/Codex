@@ -15,3 +15,7 @@ src/themes/
 src/theme.py
 
 .DS_Store
+
+dist/
+
+src/Codex.spec
