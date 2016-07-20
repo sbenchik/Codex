@@ -49,13 +49,12 @@ LEXERS = {
 
 docList = []
 if sys.platform.startswith("linux"):
-    font = QFont("DejaVu Sans Mono", 12, 50)
+    font = QFont("DejaVu Sans Mono", 10, 50)
 elif sys.platform.startswith("darwin"):
-    font = QFont("Monaco", 12, 50)
+    font = QFont("Menlo", 10, 50)
 elif sys.platform.startswith("win"):
-    font = QFont("Courier New", 12, 50)
+    font = QFont("Courier New", 10, 50)
 lexer = QsciLexerText()
 proDir = ""
 from window import mainWindow
 m = mainWindow()
-print m

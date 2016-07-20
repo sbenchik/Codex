@@ -229,7 +229,7 @@ class mainWindow(QtGui.QMainWindow):
         # Move up to the parent directory and set the window icons.
         # Without os.path it will look for icons in src/
         self.setWindowIcon(QtGui.QIcon(os.path.join(
-        os.path.dirname(os.path.dirname(__file__)))+ \
+        os.path.dirname(__file__))+ \
         "/icons/256x256/codex.png"))
         # Open any documents that were open before closing and restore settings
         QTimer.singleShot(0,self.loadDocs)
@@ -239,10 +239,14 @@ class mainWindow(QtGui.QMainWindow):
         # If there are no documents to load set the language as plain text
         # If there are documents to load guess lexers for them
         if len(config.docList) == 0:
-            self.getEditor(self.tabNum).setLexer(QsciLexerText())
+            self.getEditor(self.tabNum).setLang(QsciLexerText())
+            #print self.getEditor(self.tabNum).lexer()
             self.noLexAct.setChecked(True)
         else:
             self.guessLexer()
+        # Set font
+        self.getEditor(self.tab.currentIndex()).lexer().setFont(config.font)
+        print self.getEditor(self.tab.currentIndex()).lexer().font(-1).family()
 
     def initLexers(self):
         # Dict that maps lexer actions to their respective strings
@@ -260,7 +264,7 @@ class mainWindow(QtGui.QMainWindow):
             langAct.setCheckable(True)
             langAct.setActionGroup(langGrp)
             self.lexActs[langAct] = i
-        langGrp.triggered.connect(  \
+        langAct.triggered.connect(  \
             lambda lex: self.getEditor(self.tab.currentIndex()+1) \
             .setLang(self.lexActs.get(lex)))
 
@@ -424,10 +428,15 @@ class mainWindow(QtGui.QMainWindow):
 
     def saveFile(self):
         # Only open if it hasn't previously been saved
-        if self.getCurrentFile() == "Untitled":
-            config.docList[self.tab.currentIndex()] = \
-            QtGui.QFileDialog.getSaveFileName(self, 'Save File')
-        self.save()
+        if len(config.docList) != 0:
+            if self.getCurrentFile() == "Untitled":
+                config.docList[self.tab.currentIndex()] = \
+                QtGui.QFileDialog.getSaveFileName(self, 'Save File')
+            self.save()
+        else:
+            config.docList.append(QtGui.QFileDialog.getSaveFileName
+                                  (self, 'Save File'))
+            self.save()
 
     def saveFileAs(self):
         config.filename = QtGui.QFileDialog.getSaveFileName(self, 'Save File')
@@ -454,6 +463,8 @@ class mainWindow(QtGui.QMainWindow):
         self.editDict["edit"+str(self.tabNum)] = Editor()
         self.tab.addTab(self.getEditor(self.tabNum),
                         QString("Untitled"))
+        self.getEditor(self.tab.currentIndex()).setLexer(QsciLexerText())
+        self.getEditor(self.tab.currentIndex()).lexer().setFont(config.font)
 
     def showTerm(self):
         self.termVis = True
@@ -516,10 +527,11 @@ class mainWindow(QtGui.QMainWindow):
         if ok:
             config.font = font
             try:
-                self.getEditor(self.tab.currentIndex()).lexer.setFont(config.font)
+                self.getEditor(self.tab.currentIndex()).lexer().setFont(config.font)
             except AttributeError:
-                self.getEditor(self.tab.currentIndex()).setLexer(QsciLexerText())
-                self.getEditor(self.tab.currentIndex()).lexer.setFont(config.font)
+                self.getEditor(self.tab.currentIndex()).setLang(QsciLexerText())
+                #print self.getEditor(self.tab.currentIndex()).lexer()
+                self.getEditor(self.tab.currentIndex()).lexer().setFont(config.font)
 
     def setProDir(self):
         pdir, ok = QtGui.QInputDialog.getText(self, "Set Project Directory",
