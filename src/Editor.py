@@ -1,6 +1,7 @@
 import sys, config, lexers
-from PyQt4.QtGui import *
-from PyQt4.Qsci import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.Qsci import *
 from lexers.TextLexer import QsciLexerText
 
 class Editor(QsciScintilla):

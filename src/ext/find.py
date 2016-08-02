@@ -1,13 +1,13 @@
 # Adapted from Peter Goldsborough at
 # https://www.binpress.com/tutorial/building-a-text-editor-with-pyqt-part-3/147
 import sys, os
-os.sys.path.insert(0,os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0,os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import re, config
-from PyQt4 import QtGui, QtCore
-from PyQt4.QtCore import Qt
-from PyQt4.Qsci import *
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import *
+from PyQt5.Qsci import *
 
-class Find(QtGui.QDialog):
+class Find(QDialog):
     def __init__(self, parent = None):
         QtGui.QDialog.__init__(self, parent)
         self.parent = parent

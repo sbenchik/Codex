@@ -230,20 +230,20 @@ class Terminal(object):
         self.cx = 0
         self.cy = 0
         # Tab stops
-        self.tab_stops = range(0, self.w, 8)
+        self.tab_stops = list(range(0, self.w, 8))
 
     # UTF-8 functions
     def utf8_decode(self, d):
         o = ''
         for c in d:
-            char = ord(c)
+            char = c
             if self.utf8_units_count != self.utf8_units_received:
                 self.utf8_units_received += 1
                 if (char & 0xc0) == 0x80:
                     self.utf8_char = (self.utf8_char << 6) | (char & 0x3f)
                     if self.utf8_units_count == self.utf8_units_received:
                         if self.utf8_char < 0x10000:
-                            o += unichr(self.utf8_char)
+                            o += chr(self.utf8_char)
                         self.utf8_units_count = self.utf8_units_received = 0
                 else:
                     o += '?'
@@ -253,7 +253,7 @@ class Terminal(object):
                     self.utf8_units_count = 0
             else:
                 if (char & 0x80) == 0x00:
-                    o += c
+                    o += str(c)
                 elif (char & 0xe0) == 0xc0:
                     self.utf8_units_count = 1
                     self.utf8_char = char & 0x1f
@@ -987,13 +987,13 @@ class Terminal(object):
                         char_msb = char & 0xf0
                         if char_msb == 0x20:
                             # Intermediate bytes (added to function)
-                            self.vt100_parse_func += unichr(char)
+                            self.vt100_parse_func += chr(char)
                         elif char_msb == 0x30 and self.vt100_parse_state == 'csi':
                             # Parameter byte
-                            self.vt100_parse_param += unichr(char)
+                            self.vt100_parse_param += chr(char)
                         else:
                             # Function byte
-                            self.vt100_parse_func += unichr(char)
+                            self.vt100_parse_func += chr(char)
                             self.vt100_parse_process()
                         return True
         self.vt100_lastchar = char
@@ -1028,7 +1028,7 @@ class Terminal(object):
     def pipe(self, d):
         o = ''
         for c in d:
-            char = ord(c)
+            char = c
             if self.vt100_keyfilter_escape:
                 self.vt100_keyfilter_escape = False
                 try:
@@ -1046,7 +1046,7 @@ class Terminal(object):
                 else:
                     o += chr(127)
             else:
-                o += c
+                o += str(c)
                 if self.vt100_mode_lfnewline and char == 13:
                     o += chr(10)
         return o
@@ -1089,7 +1089,7 @@ class Terminal(object):
                     attr_ = attr
                 wx += self.utf8_charwidth(char)
                 if wx <= self.w:
-                    line[-1] += unichr(char)
+                    line[-1] += chr(char)
             screen.append(line)
 
         return (cx, cy), screen
@@ -1242,7 +1242,7 @@ class Multiplexer(object):
 
     @synchronized
     def proc_buryall(self):
-        for sid in self.session.keys():
+        for sid in list(self.session.keys()):
             self.proc_bury(sid)
 
     @synchronized
@@ -1311,7 +1311,7 @@ class Multiplexer(object):
         fds = []
         fd2sid = {}
         now = time.time()
-        for sid in self.session.keys():
+        for sid in list(self.session.keys()):
             then = self.session[sid]['time']
             if (now - then) > self.timeout:
                 self.proc_bury(sid)
@@ -1411,5 +1411,5 @@ if __name__ == "__main__":
         #multiplex.proc_write(sid, k)
         time.sleep(1)
         # print multiplex.proc_dump(sid)
-        print "Output:", multiplex.proc_dump(sid)
+        print("Output:", multiplex.proc_dump(sid))
     multiplex.stop()

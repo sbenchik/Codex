@@ -1,22 +1,22 @@
 """
-Class for the main window that contains tabs, editor, terminal, etc.
+Class for the main window that contains the tabs, editor, terminal, etc.
 """
 
-import sys, os, cPickle, gzip, subprocess, config
+import sys, os, pickle, gzip, subprocess, config
 
-from PyQt4 import QtGui, QtCore
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.Qsci import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.Qsci import *
 
-from ext.pyqterm import TerminalWidget
+from ext.terminal import Terminal
 from ext.find import Find
 from ext.fileTree import Tree
 
 from lexers.TextLexer import QsciLexerText
 from Editor import Editor
 
-class mainWindow(QtGui.QMainWindow):
+class mainWindow(QMainWindow):
 
     def __init__(self, parent = None):
         super(mainWindow, self).__init__(parent)
@@ -27,7 +27,7 @@ class mainWindow(QtGui.QMainWindow):
         config.docList = []
         self.edit = Editor()
         self.editDict = {"edit1":self.edit}
-        self.tab = QtGui.QTabWidget(self)
+        self.tab = QTabWidget(self)
 
         self.initUI()
 
@@ -43,93 +43,93 @@ class mainWindow(QtGui.QMainWindow):
         DEFAULT_FONT = str(config.font.family())+",12,-1,5,50,0,0,0,0,0"
         settings = QSettings()
         if config.font.fromString(settings.value("Editor/font",
-                                                QVariant(DEFAULT_FONT)).toString()):
+                                                QVariant(DEFAULT_FONT),type=str)):
             #config.lexer.setDefaultColor(QColor("Black"))
             config.lexer.setFont(config.font)
-        self.termVis = settings.value("mainWindow/term", QVariant(False)).toBool()
-        self.treeVis = settings.value("mainWindow/tree", QVariant(False)).toBool()
-        config.proDir = settings.value("fileTree/proDir").toString()
+        self.termVis = settings.value("mainWindow/term", QVariant(False),type=bool)
+        self.treeVis = settings.value("mainWindow/tree", QVariant(False),type=bool)
+        config.proDir = settings.value("fileTree/proDir",type=str)
 
     def initActions(self):
-        self.newAction = QtGui.QAction("New Window",self)
+        self.newAction = QAction("New Window",self)
         self.newAction.setShortcut("Ctrl+N")
         self.newAction.triggered.connect(self.new)
 
-        self.newTabAction = QtGui.QAction("New Tab",self)
+        self.newTabAction = QAction("New Tab",self)
         self.newTabAction.setShortcut("Ctrl+T")
         self.newTabAction.triggered.connect(self.newTab)
 
-        self.openAction = QtGui.QAction("Open file",self)
+        self.openAction = QAction("Open file",self)
         self.openAction.setShortcut("Ctrl+O")
         self.openAction.triggered.connect(self.openFile)
 
-        self.saveAction = QtGui.QAction("Save",self)
+        self.saveAction = QAction("Save",self)
         self.saveAction.setShortcut("Ctrl+S")
         self.saveAction.triggered.connect(self.saveFile)
 
-        self.saveasAction = QtGui.QAction("Save As",self)
+        self.saveasAction = QAction("Save As",self)
         self.saveasAction.setShortcut("Ctrl+Shift+S")
         self.saveasAction.triggered.connect(self.saveFileAs)
 
-        self.cutAction = QtGui.QAction("Cut",self)
+        self.cutAction = QAction("Cut",self)
         self.cutAction.setShortcut("Ctrl+X")
         self.cutAction.triggered.connect(lambda cut:
                                          self.getEditor(self.tab.currentIndex()).cut)
 
-        self.copyAction = QtGui.QAction("Copy",self)
+        self.copyAction = QAction("Copy",self)
         self.copyAction.setShortcut("Ctrl+C")
         self.copyAction.triggered.connect(lambda copy:
                                           self.getEditor(self.tab.currentIndex()).copy)
 
-        self.pasteAction = QtGui.QAction("Paste",self)
+        self.pasteAction = QAction("Paste",self)
         self.pasteAction.setShortcut("Ctrl+V")
         self.pasteAction.triggered.connect(lambda paste:
                                            self.getEditor(self.tab.currentIndex()).paste)
 
-        self.undoAction = QtGui.QAction("Undo",self)
+        self.undoAction = QAction("Undo",self)
         self.undoAction.setShortcut("Ctrl+Z")
         self.undoAction.triggered.connect(lambda undo:
                                           self.getEditor(self.tab.currentIndex()).undo)
 
-        self.redoAction = QtGui.QAction("Redo",self)
+        self.redoAction = QAction("Redo",self)
         self.redoAction.setShortcut("Ctrl+Y")
         self.redoAction.triggered.connect(lambda redo:
                                           self.getEditor(self.tab.currentIndex()).redo)
 
-        self.aboutAction = QtGui.QAction("About Codex",self)
+        self.aboutAction = QAction("About Codex",self)
         self.aboutAction.triggered.connect(self.about)
 
-        self.noLexAct = QtGui.QAction("Plain Text",self)
+        self.noLexAct = QAction("Plain Text",self)
         self.noLexAct.triggered.connect(lambda noLex:
                                         self.getEditor(self.tab.currentIndex()).\
                                         setLexer(QsciLexerText()))
 
-        self.termAct = QtGui.QAction("Terminal",self)
+        self.termAct = QAction("Terminal",self)
         self.termAct.setCheckable(True)
         self.termAct.triggered.connect(self.toggleTerm)
 
-        self.treeAct = QtGui.QAction("File Tree",self)
+        self.treeAct = QAction("File Tree",self)
         self.treeAct.setCheckable(True)
         self.treeAct.triggered.connect(self.toggleTree)
 
-        self.toggleIntAct = QtGui.QAction("Indentation Guides",self)
+        self.toggleIntAct = QAction("Indentation Guides",self)
         self.toggleIntAct.triggered.connect(self.toggleIntGuide)
         self.toggleIntAct.setCheckable(True)
         self.toggleIntAct.setChecked(True)
 
-        self.toggleLNAct = QtGui.QAction("Line Numbers",self)
+        self.toggleLNAct = QAction("Line Numbers",self)
         self.toggleLNAct.triggered.connect(self.toggleLN)
         self.toggleLNAct.setCheckable(True)
         self.toggleLNAct.setChecked(True)
 
-        self.FRAct = QtGui.QAction("Find and Replace",self)
+        self.FRAct = QAction("Find and Replace",self)
         self.FRAct.triggered.connect(self.fr)
         self.FRAct.setShortcut("Ctrl+F")
 
-        self.fontAct = QtGui.QAction("Choose Font",self)
+        self.fontAct = QAction("Choose Font",self)
         self.fontAct.triggered.connect(self.chooseFont)
 
-        self.dirAct = QtGui.QAction("Choose Project Directory",self)
+        self.dirAct = QAction("Choose Project Directory",self)
         self.dirAct.triggered.connect(self.setProDir)
 
     def getEditor(self, index):
@@ -221,14 +221,14 @@ class mainWindow(QtGui.QMainWindow):
         self.initMenubar()
         # Create terminal widget and automatically hide it because otherwise
         # it will awkwardly hover in the corner
-        self.term = TerminalWidget(self)
-        self.term.hide()
+        self.term = Terminal()
+        #self.term.hide()
         # x and y coordinates on the screen, width, height
-        self.setGeometry(100,100,600,430)
+        self.setGeometry(100,100,800,630)
         self.setWindowTitle("Codex")
         # Move up to the parent directory and set the window icons.
         # Without os.path it will look for icons in src/
-        self.setWindowIcon(QtGui.QIcon(os.path.join(
+        self.setWindowIcon(QIcon(os.path.join(
         os.path.dirname(__file__))+ \
         "/icons/256x256/codex.png"))
         # Open any documents that were open before closing and restore settings
@@ -246,7 +246,7 @@ class mainWindow(QtGui.QMainWindow):
             self.guessLexer()
         # Set font
         self.getEditor(self.tab.currentIndex()).lexer().setFont(config.font)
-        print self.getEditor(self.tab.currentIndex()).lexer().font(-1).family()
+        #print self.getEditor(self.tab.currentIndex()).lexer().font(-1).family()
 
     def initLexers(self):
         # Dict that maps lexer actions to their respective strings
@@ -377,7 +377,7 @@ class mainWindow(QtGui.QMainWindow):
         #print "o"
 
     def openFile(self):
-        self.file = QtGui.QFileDialog.getOpenFileName(self, 'Open File',".")
+        self.file = QFileDialog.getOpenFileName(self, 'Open File',".")
         try:
             config.docList.apppend(str(self.file))
             #print "k"
@@ -393,13 +393,13 @@ class mainWindow(QtGui.QMainWindow):
             return
         else:
             try:
-                fh = gzip.open(unicode(".open.p"), "rb")
-                config.docList = cPickle.load(fh)
+                fh = gzip.open(".open.p", "rb")
+                config.docList = pickle.load(fh)
                 ##print config.docList
                 for x in config.docList:
                     self.file = x
                     self.open()
-            except (IOError, OSError), e:
+            except (IOError, OSError):
                 #print e
                 return
             finally:
@@ -418,9 +418,9 @@ class mainWindow(QtGui.QMainWindow):
 
     def saveDocs(self):
         try:
-            fh = gzip.open(unicode(".open.p"), "wb")
-            cPickle.dump(config.docList, fh, 2)
-        except (IOError, OSError), e:
+            fh = gzip.open(".open.p", "wb")
+            pickle.dump(config.docList, fh, 2)
+        except (IOError, OSError) as e:
             raise e
         finally:
             if fh:
@@ -431,15 +431,15 @@ class mainWindow(QtGui.QMainWindow):
         if len(config.docList) != 0:
             if self.getCurrentFile() == "Untitled":
                 config.docList[self.tab.currentIndex()] = \
-                QtGui.QFileDialog.getSaveFileName(self, 'Save File')
+                QFileDialog.getSaveFileName(self, 'Save File')
             self.save()
         else:
-            config.docList.append(QtGui.QFileDialog.getSaveFileName
+            config.docList.append(QFileDialog.getSaveFileName
                                   (self, 'Save File'))
             self.save()
 
     def saveFileAs(self):
-        config.filename = QtGui.QFileDialog.getSaveFileName(self, 'Save File')
+        config.filename = QFileDialog.getSaveFileName(self, 'Save File')
         self.save()
 
     def unsaved(self):
@@ -448,9 +448,9 @@ class mainWindow(QtGui.QMainWindow):
                                 self.FNToQString(self.getCurrentFile()+"*"))
 
     def about(self):
-        QtGui.QMessageBox.about(self, "About Codex",
+        QMessageBox.about(self, "About Codex",
                                 "<p>Codex is a text editor for programmers " \
-                                "made with PyQt4 and QScintilla.</p>"
+                                "made with PyQt5 and QScintilla.</p>"
                                 )
 
     def toggleTabs(self):
@@ -469,7 +469,7 @@ class mainWindow(QtGui.QMainWindow):
     def showTerm(self):
         self.termVis = True
         self.termSplit.addWidget(self.term)
-        self.term.resize(600,30)
+        self.term.resize(800,40)
         self.term.setFont(config.font)
         self.term.show()
 
@@ -523,7 +523,7 @@ class mainWindow(QtGui.QMainWindow):
         frwin.show()
 
     def chooseFont(self):
-        font, ok = QtGui.QFontDialog.getFont()
+        font, ok = QFontDialog.getFont()
         if ok:
             config.font = font
             try:
@@ -534,7 +534,7 @@ class mainWindow(QtGui.QMainWindow):
                 self.getEditor(self.tab.currentIndex()).lexer().setFont(config.font)
 
     def setProDir(self):
-        pdir, ok = QtGui.QInputDialog.getText(self, "Set Project Directory",
+        pdir, ok = QInputDialog.getText(self, "Set Project Directory",
                                              "Enter absolute path (i.e. "\
                                              "/home/steve/Documents)")
         if ok:
@@ -550,18 +550,18 @@ class mainWindow(QtGui.QMainWindow):
         if not self.edit.isModified():
             event.accept()
         else:
-            dialog = QtGui.QMessageBox(self)
-            dialog.setIcon(QtGui.QMessageBox.Warning)
+            dialog = QMessageBox(self)
+            dialog.setIcon(QMessageBox.Warning)
             dialog.setText(config.filename+" has unsaved changes.")
             dialog.setInformativeText("Do you want to save your changes?")
-            dialog.setStandardButtons(QtGui.QMessageBox.Save |
-                                  QtGui.QMessageBox.Cancel |
-                                  QtGui.QMessageBox.Discard)
-            dialog.setDefaultButton(QtGui.QMessageBox.Save)
+            dialog.setStandardButtons(QMessageBox.Save |
+                                  QMessageBox.Cancel |
+                                  QMessageBox.Discard)
+            dialog.setDefaultButton(QMessageBox.Save)
             response = dialog.exec_()
-            if response == QtGui.QMessageBox.Save:
+            if response == QMessageBox.Save:
                 self.save()
-            elif response == QtGui.QMessageBox.Discard:
+            elif response == QMessageBox.Discard:
                 event.accept()
             else: event.ignore()
 
@@ -571,4 +571,8 @@ class mainWindow(QtGui.QMainWindow):
             self.ftree.treeView.resize(self.ftree.treeView.width(), self.height())
         except:
             pass
-        #print self.ftree.height()
+        try:
+            self.term.resize(self.width(), self.term.height())
+            print(self.term.width())
+        except:
+            pass

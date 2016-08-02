@@ -2,9 +2,10 @@
 File that contains global variables
 """
 import sys
-from PyQt4.Qsci import *
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt5.Qsci import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 from lexers.TextLexer import QsciLexerText
 
 LEXERS = {

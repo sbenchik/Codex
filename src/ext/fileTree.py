@@ -1,9 +1,9 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import config
-from PyQt4 import QtGui, QtCore
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
 
 class Tree(QWidget):
     """ File tree widget for Codex"""
@@ -12,8 +12,8 @@ class Tree(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.fsModel = QtGui.QFileSystemModel()
-        self.sModel = QtGui.QItemSelectionModel(self.fsModel)
+        self.fsModel = QFileSystemModel()
+        self.sModel = QItemSelectionModel(self.fsModel)
         # If the user entered a project directory, use that.
         # If not, go two levels up from the current file
         if config.proDir is not "":
@@ -23,7 +23,7 @@ class Tree(QWidget):
                                         os.path.dirname(os.path.dirname( \
                                                         config.docList \
                                                         [config.m.tab.currentIndex()]))))
-        self.treeView = QtGui.QTreeView(self)
+        self.treeView = QTreeView(self)
         self.treeView.setModel(self.fsModel)
         self.treeView.setSelectionModel(self.sModel)
         self.treeView.setDragEnabled(True)
@@ -34,7 +34,7 @@ class Tree(QWidget):
         self.treeView.hideColumn(1)
         self.treeView.hideColumn(2)
         self.treeView.hideColumn(3)
-        self.treeView.resize(150,430)
+        self.treeView.resize(250,430) #TODO: abstract this
         self.treeView.clicked.connect(self.clicked)
 
     def clicked(self):

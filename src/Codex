@@ -3,10 +3,11 @@ Runner script for Codex. This probably shouldn't be in src/ but some things
 don't work unless this is in src/.
 """
 
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys, os
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 
 def main():
     app = QApplication(sys.argv)

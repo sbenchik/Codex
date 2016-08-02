@@ -1,6 +1,6 @@
 import sys
-from PyQt4 import QtCore, QtGui, Qsci
-from PyQt4.QtGui import *
+from PyQt5 import QtCore, QtWidgets, QtGui, Qsci
+from PyQt5.QtGui import *
 
 # Setting for no lexer. Taken from Baz Walter at
 # https://riverbankcomputing.com/pipermail/pyqt/2009-July/023655.html
@@ -13,7 +13,7 @@ class QsciLexerText(Qsci.QsciLexerCustom):
         # plain text lexer
              0: 'Default',
              }
-        for key,value in self._styles.iteritems():
+        for key,value in self._styles.items():
             setattr(self, value, key)
 
     def description(self, style):
