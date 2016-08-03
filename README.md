@@ -18,18 +18,18 @@ Current features are:
 Features in development are:
 * More advanced autocomplete/better support for languages 
 * Live preview for Markdown/ReST/HTML files
-* Port to Python 3 and PyQt5
+
 
 # Installation
 ## From Executable- Recommended
-Simply download the latest release from "Releases", unzip the file, and run the executable (either "Codex" or "Writer")
+Simply download the latest release from "Releases", unzip the file, and run the executable
 ## From Source- Advanced
-First you'll need to install [Python 2.7.12](https://www.python.org/downloads/), [PyQt 4.11.4](https://www.riverbankcomputing.com/software/pyqt/download), and [QScintilla2](https://www.riverbankcomputing.com/software/qscintilla/download).
+First you'll need to install [Python 3.5.2](https://www.python.org/downloads/), [PyQt 5.7](https://www.riverbankcomputing.com/software/pyqt/download), and [QScintilla2](https://www.riverbankcomputing.com/software/qscintilla/download).
 From there cd into the directory you downloaded Codex into and run
 
-	python src/Codex
+	python3 src/Codex
 
-Currently Codex has been tested on Linux (Ubuntu 16.04), where it works fine, and OS X (10.10), where it's somewhat buggy.
+Currently Codex has been tested on Linux (Ubuntu 16.04), where it works fine, and OS X (10.10), where it's somewhat buggy. It should in theory work with Windows 10 as long as bash is enabled and xterm is installed, however I haven't tested it.
 
 # Acknowledgments
 The icon is made by [Logo_Jim](http://electriceyecreations.tumblr.com) from Reddit.
