@@ -133,7 +133,6 @@ class mainWindow(QMainWindow):
         self.dirAct.triggered.connect(self.setProDir)
 
     def getEditor(self, index):
-        #print index
         if index == 0:
             return self.editDict.get("edit1")
         else:
@@ -240,13 +239,12 @@ class mainWindow(QMainWindow):
         # If there are documents to load guess lexers for them
         if len(config.docList) == 0:
             self.getEditor(self.tabNum).setLang(QsciLexerText())
-            #print self.getEditor(self.tabNum).lexer()
+            print(self.getEditor(self.tabNum).lexer)
             self.noLexAct.setChecked(True)
         else:
             self.guessLexer()
         # Set font
-        self.getEditor(self.tab.currentIndex()).lexer().setFont(config.font)
-        #print self.getEditor(self.tab.currentIndex()).lexer().font(-1).family()
+        self.getEditor(self.tab.currentIndex()).lexer.setFont(config.font)
 
     def initLexers(self):
         # Dict that maps lexer actions to their respective strings
@@ -264,14 +262,11 @@ class mainWindow(QMainWindow):
             langAct.setCheckable(True)
             langAct.setActionGroup(langGrp)
             self.lexActs[langAct] = i
-        langAct.triggered.connect(  \
-            lambda lex: self.getEditor(self.tab.currentIndex()+1) \
-            .setLang(self.lexActs.get(lex)))
+        langGrp.triggered.connect(lambda lex: self.getEditor(self.tabNum+1).setLang(self.lexActs.get(lex)))
 
     def guessLexer(self):
         try:
-            #print config.docList
-            x = config.docList[self.tab.currentIndex()]
+            x = config.docList[self.tab.currentIndex()+1]
             n, e = os.path.basename(x).lower().split(".")
             if e == "sh" or e == "bsh":
                 self.getEditor(self.tabNum).setLang("Bash")
@@ -334,32 +329,30 @@ class mainWindow(QMainWindow):
                 self.getEditor(self.tabNum).setLang("XML")
             elif e == "yml":
                 self.getEditor(self.tabNum).setLang("YML")
-        except ValueError:
-                config.lexer = QsciLexerText()
-                config.lexer.setDefaultFont(config.font)
-                config.lexer.setDefaultColor(QColor("Black"))
-                self.getEditor(self.tabNum).setLexer(config.lexer)
+        except (ValueError, IndexError):
+                self.lexer = QsciLexerText()
+                self.lexer.setDefaultFont(config.font)
+                self.lexer.setDefaultColor(QColor("Black"))
+                self.getEditor(self.tabNum).setLexer(self.lexer)
                 self.noLexAct.setChecked(True)
 
     def new(self):
         main = mainWindow()
         main.show()
 
-    def FNToQString(self, fn):
-        return QString(os.path.basename(str(fn)))
-
     def open(self):
         index = self.tab.currentIndex()
-        with open(self.file,"rt") as f:
+        with open(self.file, "rt") as f:
             if self.tabNum >= 1:
                 self.newEditor()
                 #print "t"
-                self.tab.setTabText(index+1, self.FNToQString(self.file))
+                self.tab.setTabText(index+1, os.path.basename(str(self.file)))
                 self.getEditor(self.tabNum).setText(f.read())
                 self.tab.setCurrentIndex(index+1)
             if self.tabNum == 0:
                 self.tabNum = 1
-                self.tab.setTabText(index, self.FNToQString(self.file))
+                self.tab.setTabText(index, os.path.basename(str(self.file)))
+                #print(self.tabNum)
                 self.getEditor(self.tabNum).setText(f.read())
                 self.tab.setCurrentIndex(index+1)
         # Try to guess the lexer based on extension
@@ -373,13 +366,13 @@ class mainWindow(QMainWindow):
         # Add a new entry to the dict and map it an editor object
         self.editDict["edit"+str(self.tabNum)] = Editor()
         self.tab.addTab(self.getEditor(self.tabNum),
-                        self.FNToQString(self.file))
+                        os.path.basename(str(self.file)))
         #print "o"
 
     def openFile(self):
-        self.file = QFileDialog.getOpenFileName(self, 'Open File',".")
+        self.file = QFileDialog.getOpenFileName(self, 'Open File',".")[0]
         try:
-            config.docList.apppend(str(self.file))
+            config.docList.append(str(self.file))
             #print "k"
             self.open()
         except AttributeError:
@@ -414,7 +407,7 @@ class mainWindow(QMainWindow):
         self.edit.setModified(False)
         # Set the tab title to filename
         self.tab.setTabText(self.tab.currentIndex(),
-                            self.FNToQString(self.getCurrentFile()))
+                            os.path.basename(str(self.getCurrentFile())))
 
     def saveDocs(self):
         try:
@@ -445,7 +438,7 @@ class mainWindow(QMainWindow):
     def unsaved(self):
         if self.getEditor(self.tab.currentIndex()+1).isModified:
             self.tab.setTabText(self.tab.currentIndex(),
-                                self.FNToQString(self.getCurrentFile()+"*"))
+                                os.path.basename((self.getCurrentFile()+"*")))
 
     def about(self):
         QMessageBox.about(self, "About Codex",
@@ -462,9 +455,9 @@ class mainWindow(QMainWindow):
         # Add a new entry to the dict and map it to an editor object
         self.editDict["edit"+str(self.tabNum)] = Editor()
         self.tab.addTab(self.getEditor(self.tabNum),
-                        QString("Untitled"))
-        self.getEditor(self.tab.currentIndex()).setLexer(QsciLexerText())
-        self.getEditor(self.tab.currentIndex()).lexer().setFont(config.font)
+                        "Untitled")
+        self.guessLexer()
+        self.getEditor(self.tab.currentIndex()+1).lexer.setFont(config.font)
 
     def showTerm(self):
         self.termVis = True

@@ -19,6 +19,9 @@ class QsciLexerText(Qsci.QsciLexerCustom):
     def description(self, style):
         return self._styles.get(style, '')
 
+    def lexer(self):
+        return "Plain Text"
+
     def defaultColor(self, style):
         if style == self.Default:
             return QtGui.QColor('#000000')
@@ -26,7 +29,12 @@ class QsciLexerText(Qsci.QsciLexerCustom):
 
     def defaultFont(self, style):
         if style == self.Default:
-            return QtGui.QFont("Ubuntu Mono", 12, 50)
+            if sys.platform.startswith("linux"):
+                return QFont("DejaVu Sans Mono", 10, 50)
+            elif sys.platform.startswith("darwin"):
+                return QFont("Menlo", 10, 50)
+            elif sys.platform.startswith("win"):
+                return QFont("Courier New", 10, 50)
         return Qsci.QsciLexerCustom.defaultFont(self, style)
 
     def styleText(self, start, end):

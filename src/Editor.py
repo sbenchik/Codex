@@ -12,18 +12,18 @@ class Editor(QsciScintilla):
 
     def setLang(self, lex):
         if lex in config.LEXERS:
-            config.lexer = self.getLexer(lex)
+            self.lexer = self.getLexer(lex)
         else:
-            config.lexer = lex
-        config.lexer.setDefaultFont(config.font)
-        config.lexer.setDefaultColor(QColor("Black"))
-        self.setLexer(config.lexer)
+            self.lexer = lex
+        self.lexer.setDefaultFont(config.font)
+        self.lexer.setDefaultColor(QColor("Black"))
+        self.setLexer(self.lexer)
         # Setting the lexer resets the margin background to gray
         # so it has to be reset to white
         self.setMarginsBackgroundColor(QColor("White"))
         # Comments use a serifed font by default so
         # they have to be set to use the same font
-        config.lexer.setFont(config.font, 1)
+        self.lexer.setFont(config.font, 1)
 
     def getLexer(self, lex):
         self.lexer = config.LEXERS.get(lex)
