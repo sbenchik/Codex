@@ -1,7 +1,3 @@
-"""
-Class for the main window that contains the tabs, editor, terminal, etc.
-"""
-
 import sys, os, pickle, gzip, subprocess, config
 
 from PyQt5.QtCore import *
@@ -17,6 +13,7 @@ from lexers.TextLexer import QsciLexerText
 from Editor import Editor
 
 class mainWindow(QMainWindow):
+    """Class for the main window that contains the tabs, editor, terminal, etc."""
 
     def __init__(self, parent = None):
         super(mainWindow, self).__init__(parent)
@@ -139,7 +136,7 @@ class mainWindow(QMainWindow):
             return self.editDict.get(("edit"+str(index)))
 
     def getCurrentFile(self):
-        return config.docList[self.tab.currentIndex()]
+        return config.docList[self.tab.currentIndex()] # returns tuple (?)
 
     def initMenubar(self):
         menubar = self.menuBar()
@@ -239,7 +236,6 @@ class mainWindow(QMainWindow):
         # If there are documents to load guess lexers for them
         if len(config.docList) == 0:
             self.getEditor(self.tabNum).setLang(QsciLexerText())
-            print(self.getEditor(self.tabNum).lexer)
             self.noLexAct.setChecked(True)
         else:
             self.guessLexer()
@@ -342,19 +338,20 @@ class mainWindow(QMainWindow):
 
     def open(self):
         index = self.tab.currentIndex()
-        with open(self.file, "rt") as f:
-            if self.tabNum >= 1:
-                self.newEditor()
-                #print "t"
-                self.tab.setTabText(index+1, os.path.basename(str(self.file)))
-                self.getEditor(self.tabNum).setText(f.read())
-                self.tab.setCurrentIndex(index+1)
-            if self.tabNum == 0:
-                self.tabNum = 1
-                self.tab.setTabText(index, os.path.basename(str(self.file)))
-                #print(self.tabNum)
-                self.getEditor(self.tabNum).setText(f.read())
-                self.tab.setCurrentIndex(index+1)
+        if(self.file != ('', '')):
+            with open(self.file, "rt") as f:
+                if self.tabNum >= 1:
+                    self.newEditor()
+                    #print "t"
+                    self.tab.setTabText(index+1, os.path.basename(str(self.file)))
+                    self.getEditor(self.tabNum).setText(f.read())
+                    self.tab.setCurrentIndex(index+1)
+                if self.tabNum == 0:
+                    self.tabNum = 1
+                    self.tab.setTabText(index, os.path.basename(str(self.file)))
+                    #print(self.tabNum)
+                    self.getEditor(self.tabNum).setText(f.read())
+                    self.tab.setCurrentIndex(index+1)
         # Try to guess the lexer based on extension
         self.guessLexer()
         # Not really sure where else to put this
@@ -388,7 +385,6 @@ class mainWindow(QMainWindow):
             try:
                 fh = gzip.open(".open.p", "rb")
                 config.docList = pickle.load(fh)
-                ##print config.docList
                 for x in config.docList:
                     self.file = x
                     self.open()
@@ -438,7 +434,7 @@ class mainWindow(QMainWindow):
     def unsaved(self):
         if self.getEditor(self.tab.currentIndex()+1).isModified:
             self.tab.setTabText(self.tab.currentIndex(),
-                                os.path.basename((self.getCurrentFile()+"*")))
+                                os.path.basename(self.getCurrentFile()+"*"))
 
     def about(self):
         QMessageBox.about(self, "About Codex",
@@ -566,6 +562,5 @@ class mainWindow(QMainWindow):
             pass
         try:
             self.term.resize(self.width(), self.term.height())
-            print(self.term.width())
         except:
             pass
