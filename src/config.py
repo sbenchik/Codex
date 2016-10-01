@@ -47,7 +47,6 @@ LEXERS = {
         'YAML': QsciLexerYAML(),
     }
 
-
 docList = []
 if sys.platform.startswith("linux"):
     font = QFont("DejaVu Sans Mono", 10, 50)

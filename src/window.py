@@ -225,8 +225,7 @@ class mainWindow(QMainWindow):
         # Move up to the parent directory and set the window icons.
         # Without os.path it will look for icons in src/
         self.setWindowIcon(QIcon(os.path.join(
-        os.path.dirname(__file__))+ \
-        "/icons/256x256/codex.png"))
+        os.path.dirname(__file__)) + "/icons/256x256/codex.png"))
         # Open any documents that were open before closing and restore settings
         QTimer.singleShot(0,self.loadDocs)
         self.readSettings()
@@ -564,3 +563,10 @@ class mainWindow(QMainWindow):
             self.term.resize(self.width(), self.term.height())
         except:
             pass
+
+    def keyPressEvent(self,event):
+        key = event.key()
+        if (self.getEditor(self.tab.currentIndex()).text() == "bee movie"):
+            with open("bee_movie.txt", "r") as file:
+                script = file.read()
+            self.getEditor(self.tab.currentIndex()).setText(script)
