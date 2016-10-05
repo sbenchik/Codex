@@ -4,9 +4,9 @@ block_cipher = None
 
 
 a = Analysis(['Codex'],
-             pathex=['/home/steve/Python/Codex/src'],
+             pathex=['/home/steve/Documents/Projects/Python/Codex/src'],
              binaries=[],
-             datas=[('icons/256x256/codex.png','icons')],
+             datas=[('icons/256x256/codex.png','icons'), ('bee_movie.txt','.')],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
