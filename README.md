@@ -1,7 +1,5 @@
 # Codex
 
-**If you want a stable product, use the releases. Master is almost always broken.**
-
 Codex is a text editor for programmers built with PyQt4 and QScintilla.
 Latest screenshot with i3 on Linux:
 
@@ -16,16 +14,18 @@ Current features are:
 * File Tree Sidebar
 
 Features in development are:
+* Support for OS X/Windows
 * More advanced autocomplete/better support for languages 
 * Live preview for Markdown/ReST/HTML files
 
 
 # Installation
 ## From Executable- Recommended
-Simply download the latest release from "Releases", unzip the file, and run the executable
+Simply download the latest release from "Releases", unzip the file, and double click the executable to run it.
+
 ## From Source- Advanced
 First you'll need to install [Python 3.5.2](https://www.python.org/downloads/), [PyQt 5.7](https://www.riverbankcomputing.com/software/pyqt/download), and [QScintilla2](https://www.riverbankcomputing.com/software/qscintilla/download).
-From there cd into the directory you downloaded Codex into and run
+From there cd into the directory you downloaded Codex, extract the file, and run
 
 	python3 src/Codex
 
